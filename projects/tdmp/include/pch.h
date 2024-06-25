@@ -5,10 +5,10 @@
 #define NOMINMAX
 #include <Windows.h>
 #include <cstdio>
-
-#include <span>
-#include <functional>
 #include <string>
 #include <string_view>
+#include <format>
+
+#include "argparse/argparse.hpp"
 
 #endif // TDMP_PCH_H

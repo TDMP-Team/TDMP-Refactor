@@ -4,7 +4,7 @@
 - [Premake](https://premake.github.io/)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/)
 - [VCPKG](https://vcpkg.io/en/)
-  - No libraries are currently required
+  - vcpkg install argparse:x64-windows-static
 
 # For Developers
 

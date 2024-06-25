@@ -17,8 +17,20 @@ static BOOL WINAPI consoleHandler(DWORD dwCtrlType) {
         TerminateProcess(pi.hProcess, 0);
         return TRUE;
     default:
+        util::displayMessage(MB_OK, L"consoleHandler -> {}", dwCtrlType);
         return FALSE;
     }
+}
+
+static std::wstring getCommandLineSkipFirst() {
+    LPWSTR commandLine = GetCommandLineW();
+    std::wstring cmdline = commandLine;
+
+    size_t spacePos = cmdline.find(' ');
+    if (spacePos != std::wstring::npos)
+        return cmdline.substr(spacePos + 1);
+
+    return L"";
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
@@ -97,6 +109,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
     // Spawn Process
     //------------------------------------------------------------------------
+    std::wstring currentPath = util::s2ws(fs::current_path().string());
+    std::wstring launchOptions = std::format(L"\"{}\" -launch-dir=\"{}\" {}", executablePath, currentPath, getCommandLineSkipFirst());
+
     STARTUPINFOW si        = { 0 };
     si.cb                  = sizeof(STARTUPINFOW);
 
@@ -110,7 +125,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     SetEnvironmentVariableA("SteamAppId", "1167630");
 
     if (!CreateProcessW(nullptr,
-        (LPWSTR)executablePath.data(),
+        (LPWSTR)launchOptions.data(),
         nullptr,
         nullptr,
         TRUE,
@@ -123,8 +138,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
         util::displayError(L"CreateProcessW Failed");
         return 1;
     }
-
-    SetConsoleCtrlHandler(consoleHandler, TRUE);
 
     LPVOID loadlibAddress;
     HANDLE thread;
@@ -166,6 +179,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
     VirtualFreeEx(pi.hProcess, thread, 0, MEM_RELEASE);
     ResumeThread(pi.hThread);
+
+    SetConsoleCtrlHandler(consoleHandler, TRUE); // ! Does not work with AttachConsole (CTRL+C event)
+//     GenerateConsoleCtrlEvent(CTRL_C_EVENT, pi.dwProcessId);
 
     WaitForSingleObject(pi.hThread, INFINITE);
 
