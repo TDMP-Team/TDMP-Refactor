@@ -7,8 +7,8 @@ namespace tdmp::console {
 
     template<typename... Args>
     inline void write(const std::string& fmt, Args&&... args) {
-        std::string formatted = std::vformat(fmt, std::make_format_args(std::forward<Args>(args)...));
-        WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), formatted.c_str(), static_cast<DWORD>(formatted.length()), nullptr, 0);
+        std::string formatted = std::vformat(fmt, std::make_format_args(args...));
+        WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), formatted.c_str(), static_cast<DWORD>(formatted.length()), nullptr, nullptr);
     }
 
     template<typename... Args>
