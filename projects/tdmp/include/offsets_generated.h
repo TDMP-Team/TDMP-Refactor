@@ -3,8 +3,12 @@
 
 namespace tdmp::offsets {
 
+    namespace game {
+        constexpr uint64_t log = 0x408b10;
+    }
+
     namespace lua {
-        constexpr uint64_t lua_newstate = 0x7ff7d177b360;
+        constexpr uint64_t lua_newstate = 0x39b360;
     }
 
 }

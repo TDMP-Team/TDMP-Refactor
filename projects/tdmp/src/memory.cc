@@ -72,3 +72,7 @@ uint64_t mem::findIDAPattern(const char* pattern_u8, bool relative) {
 
     return 0;
 }
+
+uint64_t mem::baseAddress() {
+    return base;
+}

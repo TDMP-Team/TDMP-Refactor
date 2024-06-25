@@ -30,6 +30,10 @@ bool util::dumpOffsets() {
     std::map<std::string, std::vector<signature_t>> signatureNamespaces = {
         { "lua", {
             signature_t("lua_newstate", "E8 ? ? ? ? 48 8B 4B 30 48 89 01")
+        }},
+        
+        { "game", {
+            signature_t("log", "E8 ? ? ? ? 3B 37")
         }}
     };
 
@@ -45,14 +49,16 @@ bool util::dumpOffsets() {
         ss << "    namespace " << nsName << " {\n";
 
         for (const signature_t& sig : nsSignatures) {
-            const uint64_t offset = mem::findIDAPattern(sig.signature, sig.relative);
-            if (!offset) {
+            const uint64_t address = mem::findIDAPattern(sig.signature, sig.relative);
+            if (!address) {
                 invalidSignatures.emplace_back((nsName + std::string("::") + sig.name));
             }
 
-            std::cout << std::format("{}::{} = {:#x}\n", nsName, sig.name, offset);
+            const uint64_t offsetFrombase = address - mem::baseAddress();
 
-            std::string offsetStr = std::format("{:#x}", offset);
+            std::cout << std::format("{}::{} = {:#x}\n", nsName, sig.name, offsetFrombase);
+
+            std::string offsetStr = std::format("{:#x}", offsetFrombase);
             ss << "        constexpr uint64_t " << sig.name << " = " << offsetStr << ";\n";
         }
 

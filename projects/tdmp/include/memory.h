@@ -12,12 +12,7 @@ namespace tdmp::mem {
 
     bool getModuleInfo();
     uint64_t findIDAPattern(const char* pattern_u8, bool relative = false);
-
-    bool compare_pattern(const char* data, const char* pattern, const char* mask);
-    int64_t read_ptr(int64_t addr, int32_t off);
-
-    uint64_t find_ida_pattern(const std::string& ida, bool relative = false);
-    uint64_t find_code_pattern(mem::signature sig);
+    uint64_t baseAddress();
 
     // Hooks
     //------------------------------------------------------------------------

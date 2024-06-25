@@ -25,9 +25,12 @@ BOOL WINAPI DllMain(
 
 namespace tdmp::types {
     using lua_newstate = std::add_pointer_t<lua_State*(lua_Alloc f, void* ud)>;
+    using td_log = std::add_pointer_t<int(int level, const char* fmt, ...)>;
 }
 
 tdmp::types::lua_newstate o_lua_newstate = nullptr;
+tdmp::types::td_log td_log = nullptr;
+
 lua_State* L;
 
 lua_State* h_lua_newstate(lua_Alloc f, void* ud) {
@@ -39,6 +42,13 @@ lua_State* h_lua_newstate(lua_Alloc f, void* ud) {
 
     return L;
 }
+
+enum class td_log_level : uint8_t {
+    debug   = 0,
+    info    = 1,
+    warning = 2,
+    error   = 3
+};
 
 void earlyEntry() {
     // Connect to launcher's console
@@ -73,6 +83,8 @@ void earlyEntry() {
 
     Sleep(1000);
 
+    mem::getModuleInfo();
+
      if (args.get<bool>("-dump")) {
          util::dumpOffsets();
          ExitProcess(0);
@@ -80,5 +92,10 @@ void earlyEntry() {
 
      MH_Initialize();
 
-     mem::make_hook("luaL_newstate", tdmp::offsets::lua::lua_newstate, &h_lua_newstate, &o_lua_newstate);
+     mem::make_hook("luaL_newstate", mem::baseAddress() + tdmp::offsets::lua::lua_newstate, &h_lua_newstate, &o_lua_newstate);
+
+     td_log = (tdmp::types::td_log)(mem::baseAddress() + tdmp::offsets::game::log);
+     td_log(0, "Zero");
+     td_log(1, "One");
+     td_log(2, "Three");
 }
