@@ -90,6 +90,14 @@ static void displayLastError(std::wstring format, Args&&... args) {
     displayMessage(MB_OK | MB_ICONERROR, formatted);
 }
 
+static void replaceAllOccurrences(std::string& input, const std::string& to_replace, const std::string& replacement) {
+    size_t pos = 0;
+    while ((pos = input.find(to_replace, pos)) != std::string::npos) {
+        input.replace(pos, to_replace.length(), replacement);
+        pos += replacement.length();
+    }
+}
+
 // https://stackoverflow.com/a/10738141
 static std::wstring s2ws(const std::string& str) {
     int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);

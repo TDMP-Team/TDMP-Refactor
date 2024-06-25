@@ -4,11 +4,28 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <Windows.h>
+#include <psapi.h>
+
+#include <iostream>
 #include <cstdio>
 #include <string>
 #include <string_view>
 #include <format>
+#include <unordered_map>
+#include <type_traits>
+#include <map>
+
+
+extern "C" {
+    #include "lua.h"
+    #include "lualib.h"
+    #include "lauxlib.h"
+}
 
 #include "argparse/argparse.hpp"
+#include "MinHook.h"
+
+#include "offsets_generated.h"
+#include "console.h"
 
 #endif // TDMP_PCH_H

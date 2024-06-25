@@ -5,16 +5,21 @@
 #define NOMINMAX
 #include <Windows.h>
 #include <shellapi.h>
-#include <cstdio>
-#include <stdexcept>
-#include <optional>
-#include <string_view>
-#include <string>
-#include <format>
+
 #include <filesystem>
 #include <fstream>
+#include <format>
+
+#include <cstdio>
+#include <stdexcept>
+
+#include <string_view>
+#include <string>
+
 #include <numeric>
 #include <utility>
+#include <vector>
+#include <map>
 
 #include "argparse/argparse.hpp"
 

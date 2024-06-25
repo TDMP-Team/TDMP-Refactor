@@ -1,10 +1,15 @@
 # Teardown Multiplayer
 
+## Things to note
+A lot of this code has a chance of being refactored. As it is being developed, you might find some messy code, commented out code, testing stuff, etc...  
+So nothing will be final is essentially what I'm saying (like h_lua_newstate being in dllmain.cc (as of 25/07/24), this will be changed)
+
 ## Requirements
 - [Premake](https://premake.github.io/)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/)
 - [VCPKG](https://vcpkg.io/en/)
   - vcpkg install argparse:x64-windows-static
+  - vcpkg install minhook:x64-windows-static
 
 # For Developers
 

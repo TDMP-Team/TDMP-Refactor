@@ -4,13 +4,13 @@ project "tdmp"
     cppdialect "C++20"
 
     files { "src/**.cc", "include/**.h", "../shared/include/**.h" }
-    includedirs { "include", "../shared/include", VCPKG_INCLUDE }
-    libdirs { VCPKG_LIB }
+    includedirs { "include", "../shared/include", VCPKG_INCLUDE, "deps/lua/include" }
+    libdirs { VCPKG_LIB, "deps/lua/lib" }
 
     pchheader "pch.h" -- When setting the precompiled header file, you don't provide the path to the file as you might expect. Rather, you specify how the include will appear in the source code
     pchsource "src/pch.cc"
 
-    links { "kernel32", "user32" }
+    links { "kernel32", "user32", "lua51-static", "minhook.x64" }
 
     filter { "configurations:Debug" }
         targetdir "build/bin/debug"
