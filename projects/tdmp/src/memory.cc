@@ -43,12 +43,11 @@ static int64_t readPtr(uint64_t addr, uint32_t offset) {
 
 // Public Functions
 //------------------------------------------------------------------------
-bool mem::getModuleInfo() {
+bool mem::initializeMemory() {
     if (base != 0) return true;
 
     MODULEINFO mi = { 0 };
     if (!GetModuleInformation(GetCurrentProcess(), GetModuleHandleW(nullptr), &mi, sizeof(MODULEINFO))) {
-        util::displayLastError(L"GetModuleInformation Failed");
         return false;
     }
 

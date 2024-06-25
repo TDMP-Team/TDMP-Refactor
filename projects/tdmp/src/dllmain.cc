@@ -2,6 +2,7 @@
 #include "memory.h"
 #include "dumper.h"
 #include "util/util.h"
+#include "memory/hooks.h"
 
 using namespace tdmp;
 
@@ -61,8 +62,8 @@ void earlyEntry() {
 
     // Parse Arguments
     //------------------------------------------------------------------------
-     argparse::ArgumentParser args("TDMP");
-     args.add_argument("-dump").default_value(false).implicit_value(true);
+    argparse::ArgumentParser args("TDMP");
+    args.add_argument("-dump").default_value(false).implicit_value(true);
 
     {
         int argc;
@@ -79,22 +80,33 @@ void earlyEntry() {
 
     // Other
     //------------------------------------------------------------------------
-    printf("Injected!\n");
+    console::writeln("Injected!");
 
     Sleep(1000);
 
-    mem::getModuleInfo();
+    if (!mem::initializeMemory()) {
+        util::displayLastError(L"Failed to initialize memory");
+        ExitProcess(1);
+        return;
+    }
 
      if (args.get<bool>("-dump")) {
          util::dumpOffsets();
          ExitProcess(0);
      }
 
-     MH_Initialize();
+     // Update all the offsets with the base address
+     offsets::generate();
 
-     mem::make_hook("luaL_newstate", mem::baseAddress() + tdmp::offsets::lua::lua_newstate, &h_lua_newstate, &o_lua_newstate);
+     if (MH_STATUS status = MH_Initialize(); status != MH_OK) {
+         std::wstring err = util::s2ws(MH_StatusToString(status));
+         util::displayError(L"Failed initializing minhook: {}", err);
+         return;
+     }
 
-     td_log = (tdmp::types::td_log)(mem::baseAddress() + tdmp::offsets::game::log);
+     mem::hooks::addHook("luaL_newstate", tdmp::offsets::lua::lua_newstate, &h_lua_newstate, &o_lua_newstate);
+
+     td_log = (tdmp::types::td_log)(tdmp::offsets::game::log);
      td_log(0, "Zero");
      td_log(1, "One");
      td_log(2, "Three");

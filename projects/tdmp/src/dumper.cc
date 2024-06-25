@@ -15,10 +15,6 @@ struct signature_t {
 };
 
 bool util::dumpOffsets() {
-    if (!mem::getModuleInfo()) {
-        return false;
-    }
-
     MODULEINFO mi = { 0 };
     if (!GetModuleInformation(GetCurrentProcess(), GetModuleHandleW(nullptr), &mi, sizeof(MODULEINFO))) {
         util::displayLastError(L"GetModuleInformation Failed");
@@ -37,38 +33,50 @@ bool util::dumpOffsets() {
         }}
     };
 
-    std::stringstream ss;
-    ss << "#ifndef TDMP_GENERATED_OFFSETS_H\n"
-       << "#define TDMP_GENERATED_OFFSETS_H\n\n"
-       << "namespace tdmp::offsets {\n\n";
+    std::stringstream header, genFuncSS;
 
-    for (const auto& ns : signatureNamespaces) {
-        std::string nsName = ns.first;
-        std::vector<signature_t> nsSignatures = ns.second;
+    genFuncSS << "    inline void generate() {\n"
+              << "        const uint64_t base = mem::baseAddress();\n\n";
 
-        ss << "    namespace " << nsName << " {\n";
+    { // Header
+        header << "#ifndef TDMP_GENERATED_OFFSETS_H\n"
+            << "#define TDMP_GENERATED_OFFSETS_H\n\n"
+            << "#include \"memory.h\"\n\n"
+            << "namespace tdmp::offsets {\n\n";
 
-        for (const signature_t& sig : nsSignatures) {
-            const uint64_t address = mem::findIDAPattern(sig.signature, sig.relative);
-            if (!address) {
-                invalidSignatures.emplace_back((nsName + std::string("::") + sig.name));
+        for (const auto& ns : signatureNamespaces) {
+            std::string nsName = ns.first;
+            std::vector<signature_t> nsSignatures = ns.second;
+
+            header << "    namespace " << nsName << " {\n";
+
+            for (const signature_t& sig : nsSignatures) {
+                const uint64_t address = mem::findIDAPattern(sig.signature, sig.relative);
+                const uint64_t offsetFrombase = address - mem::baseAddress();
+
+                if (!address) {
+                    invalidSignatures.emplace_back((nsName + std::string("::") + sig.name));
+                } else {
+                    genFuncSS << "        " << nsName << "::" << sig.name << " = base + " << nsName << "::" << sig.name << ";\n";
+                }
+
+                std::cout << std::format("{}::{} = {:#x}\n", nsName, sig.name, offsetFrombase);
+
+                std::string offsetStr = std::format("{:#x}", offsetFrombase);
+                header << "        static uint64_t " << sig.name << " = " << offsetStr << ";\n";
             }
 
-            const uint64_t offsetFrombase = address - mem::baseAddress();
-
-            std::cout << std::format("{}::{} = {:#x}\n", nsName, sig.name, offsetFrombase);
-
-            std::string offsetStr = std::format("{:#x}", offsetFrombase);
-            ss << "        constexpr uint64_t " << sig.name << " = " << offsetStr << ";\n";
+            header << "    }\n\n";
         }
 
-        ss << "    }\n\n";
+        genFuncSS << "    }\n";
+
+        header << genFuncSS.str() << '\n';
+        header << "}\n\n"
+            << "#endif // TDMP_GENERATED_OFFSETS_H";
     }
 
-    ss << "}\n\n"
-       << "#endif // TDMP_GENERATED_OFFSETS_H";
-
-    std::string finalString = ss.str();
+    std::string finalString = header.str();
     HGLOBAL hMem =  GlobalAlloc(GMEM_MOVEABLE, finalString.length() + 1);
     memcpy(GlobalLock(hMem), finalString.data(), finalString.length() + 1);
     GlobalUnlock(hMem);
@@ -81,13 +89,13 @@ bool util::dumpOffsets() {
     util::displayMessage(MB_OK, L"Copied generated offsets to clipboard!");
 
     if (invalidSignatures.size() > 0) {
-        printf("Failed getting offsets, invalid signatures are:\n");
+        console::writeln("Failed getting offsets, invalid signatures are:");
         for (const std::string& name : invalidSignatures) {
-            printf("    %s\n", name.data());
+            console::writeln("    {}", name.data());
         }
     }
 
-    printf("\n%s\n", finalString.data());
+    console::writeln("\n{}", finalString.data());
 
     return true;
 }
