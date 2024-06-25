@@ -49,11 +49,6 @@ void earlyEntry() {
     freopen_s(&f, "CONOUT$", "w", stdout);
     freopen_s(&f, "CONOUT$", "w", stderr);
 
-    int mode;
-    GetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), reinterpret_cast<LPDWORD>(&mode));
-    mode |= ENABLE_PROCESSED_INPUT;
-    SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), mode);
-
     // Parse Arguments
     //------------------------------------------------------------------------
      argparse::ArgumentParser args("TDMP");

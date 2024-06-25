@@ -29,7 +29,7 @@ bool util::dumpOffsets() {
 
     std::map<std::string, std::vector<signature_t>> signatureNamespaces = {
         { "lua", {
-            signature_t("lua_newstate", "48 89 5C 24 ? 48 89 74 24 ? 57 48 83 EC 20 48 8B FA 48 8B F1 48 8B CF 41 B9 ? ? ? ? 45 33 C0 33 D2 FF D6 48 8B D8 48 85 C0 75 10 48 8B 5C 24 ?")
+            signature_t("lua_newstate", "E8 ? ? ? ? 48 8B 4B 30 48 89 01")
         }}
     };
 
@@ -45,7 +45,7 @@ bool util::dumpOffsets() {
         ss << "    namespace " << nsName << " {\n";
 
         for (const signature_t& sig : nsSignatures) {
-            const uint64_t offset = mem::find_ida_pattern(sig.signature, sig.relative);
+            const uint64_t offset = mem::findIDAPattern(sig.signature, sig.relative);
             if (!offset) {
                 invalidSignatures.emplace_back((nsName + std::string("::") + sig.name));
             }
@@ -70,6 +70,7 @@ bool util::dumpOffsets() {
     EmptyClipboard();
     SetClipboardData(CF_TEXT, hMem);
     CloseClipboard();
+    GlobalFree(hMem);
 
     util::displayMessage(MB_OK, L"Copied generated offsets to clipboard!");
 

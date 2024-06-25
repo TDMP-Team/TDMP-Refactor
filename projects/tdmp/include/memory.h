@@ -11,7 +11,7 @@ namespace tdmp::mem {
     };
 
     bool getModuleInfo();
-//     uint64_t findIDAPattern(const char* pattern_u8, bool relative = false);
+    uint64_t findIDAPattern(const char* pattern_u8, bool relative = false);
 
     bool compare_pattern(const char* data, const char* pattern, const char* mask);
     int64_t read_ptr(int64_t addr, int32_t off);
