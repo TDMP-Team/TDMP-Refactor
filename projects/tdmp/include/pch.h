@@ -13,6 +13,8 @@
 #include <format>
 #include <unordered_map>
 #include <type_traits>
+#include <iomanip>
+#include <span>
 #include <map>
 
 
@@ -25,7 +27,6 @@ extern "C" {
 #include "argparse/argparse.hpp"
 #include "MinHook.h"
 
-#include "offsets_generated.h"
 #include "console.h"
 
 #endif // TDMP_PCH_H

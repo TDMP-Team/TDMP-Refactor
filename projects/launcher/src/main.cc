@@ -209,11 +209,6 @@ cleanup:
             util::displayLastError(L"CloseWindow failed");
             exitCode = 1;
         }
-
-        if (!FreeConsole()) {
-            util::displayLastError(L"FreeConsole failed");
-            exitCode = 1;
-        }
     }
 
     ExitProcess(exitCode);
