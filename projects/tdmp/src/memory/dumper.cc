@@ -55,6 +55,8 @@ static void processSignature(const std::string& nsName, const mem::signature& si
     const uint64_t address = mem::findIDAPattern(sig.sig, sig.relative);
     const uint64_t offsetFromBase = address - mem::baseAddress();
 
+    console::setStatus("Generating offset {} {:#x}", sig.name, offsetFromBase);
+
     if (!address) {
         invalidSignatures.emplace_back(nsName + "::" + sig.name);
     } else {

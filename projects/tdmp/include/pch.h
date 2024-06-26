@@ -6,16 +6,16 @@
 #include <Windows.h>
 #include <psapi.h>
 
-#include <iostream>
 #include <cstdio>
+#include <format>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <span>
 #include <string>
 #include <string_view>
-#include <format>
-#include <unordered_map>
 #include <type_traits>
-#include <iomanip>
-#include <span>
-#include <map>
+#include <unordered_map>
 
 
 extern "C" {

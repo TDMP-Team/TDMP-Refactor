@@ -58,7 +58,7 @@ void teardown::earlyEntryThread() {
         return;
     }
 
-    // Update all the offsets with the base address
+    // Wait for data section to load and update all the offsets with the base address
     mem::waitForSection(GetModuleHandle(NULL), ".data");
 
     if (args.get<bool>("-dump")) {
