@@ -3,6 +3,9 @@
 
 #include "pch.h"
 
+#define WIDEN2(x) L##x
+#define WIDEN(x) WIDEN2(x)
+
 namespace tdmp::util {
 
 static std::pair<int32_t, std::wstring> getLastError() {

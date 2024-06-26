@@ -22,6 +22,8 @@ namespace tdmp::mem {
     bool isSectionLoaded(HMODULE module, const char* section);
     void waitForSection(HMODULE hModule, const char* sectionName);
 
+    bool isAddressExecutable(uintptr_t address);
+
 }
 
 #endif // TDMP_MEMORY_H

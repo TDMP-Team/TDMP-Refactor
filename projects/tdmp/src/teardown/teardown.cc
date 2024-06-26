@@ -58,16 +58,32 @@ void teardown::earlyEntryThread() {
         return;
     }
 
+    // Update all the offsets with the base address
+    mem::waitForSection(GetModuleHandle(NULL), ".data");
+
     if (args.get<bool>("-dump")) {
         mem::dumpOffsets();
         ExitProcess(0);
     }
 
-    // Update all the offsets with the base address
-    mem::waitForSection(GetModuleHandle(NULL), ".data");
-
     console::setStatus("Generating addresses");
-    offsets::generate();
+
+    std::vector<std::string> badOffsets;
+    if (!offsets::generate(badOffsets)) {
+        std::stringstream ss;
+        ss << "Invalid offsets: " << badOffsets.size() << "\n";
+
+        for (const std::string& offset : badOffsets) {
+            ss << "  " << offset << '\n';
+        }
+
+        std::wstring ssStr = util::s2ws(ss.str());
+
+        console::writeln(L"\n{}", ssStr);
+        util::displayError(ssStr);
+
+        ExitProcess(1);
+    }
 
     if (MH_STATUS status = MH_Initialize(); status != MH_OK) {
         std::wstring err = util::s2ws(MH_StatusToString(status));
