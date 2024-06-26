@@ -4,16 +4,24 @@
 A lot of this code has a chance of being refactored. As it is being developed, you might find some messy code, commented out code, testing stuff, etc...  
 So nothing will be final is essentially what I'm saying (like h_lua_newstate being in dllmain.cc (as of 25/07/24), this will be changed)
 
+# For Developers
+
 ## Requirements
 - [Premake](https://premake.github.io/)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/)
 - [VCPKG](https://vcpkg.io/en/)
+  - Once installed, set an environment variable called `VCPKG_ROOT` and set it to the root directory of vcpkg
+  -----------------------------------------------------------------
   - vcpkg install argparse:x64-windows-static
   - vcpkg install minhook:x64-windows-static
 
-# For Developers
+- [Child Process Debugging Power Tool](https://marketplace.visualstudio.com/items?itemName=vsdbgplat.MicrosoftChildProcessDebuggingPowerTool)
+  - This makes it so if you debug the launcher, it will then debug Teardown after CreateProcess is called, extremely helpful for debugging
 
-## How to compile
+- [Steamless](https://github.com/atom0s/Steamless/releases) (Required for running debug builds, it allows Teardown to be debugged)
+  - This will create a `teardown.exe.unpacked.exe` and the launcher will use this instead of the original
+
+## How to build
 ```
 1. Run `premake5 vs2022` in your command line
 2. Open the generated solution file in Visual Studio

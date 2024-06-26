@@ -5,7 +5,7 @@
 using namespace tdmp;
 
 static constexpr wchar_t DLL_NAME[] = L"tdmp.dll";
-static PROCESS_INFORMATION pi = { 0 };
+static PROCESS_INFORMATION pi{};
 
 static BOOL WINAPI consoleHandler(DWORD dwCtrlType) {
     switch (dwCtrlType) {
@@ -34,10 +34,21 @@ static std::wstring getCommandLineSkipFirst() {
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
+#if defined(TDMP_DEBUG)
+    const std::wstring teardownExeName = L"teardown.exe.unpacked.exe";
+#else
+    const std::wstring teardownExeName = L"teardown.exe";
+#endif
+
     // Get Game Path
     //------------------------------------------------------------------------
     fs::path teardownPath;
-    if (!steam::getGamePath(teardownPath, L"Teardown", L"teardown.exe")) {
+    if (!steam::getGamePath(teardownPath, L"Teardown", teardownExeName)) {
+#if defined(TDMP_DEBUG)
+        util::displayError(L"Could not find {}, please download \"Steamless\" and unpack Teardown in order to debug properly", teardownExeName);
+#else
+        util::displayError(L"Could not locate teardown\nIf you have the game installed, please contact us so we can help fix the problem");
+#endif
         return 1;
     }
 
@@ -86,7 +97,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
     // Setup Console
     //------------------------------------------------------------------------
-    FILE* f;
+    FILE* f = nullptr;
 
     if (!AttachConsole(ATTACH_PARENT_PROCESS)) {
         // We couldn't attach to an existing console, so let's create a new one
@@ -129,7 +140,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
         nullptr,
         nullptr,
         TRUE,
-        CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED,
+        CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED | INHERIT_PARENT_AFFINITY,
         nullptr,
         (LPWSTR)executableRoot.data(),
         &si,
