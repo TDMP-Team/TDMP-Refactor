@@ -1,5 +1,10 @@
+# Visual Studio
 .vs
 *.sln
 *.vcxproj*
 
+# Snyk
+.dccache
+
+# Other
 build/
