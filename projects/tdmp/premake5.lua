@@ -12,12 +12,16 @@ project "tdmp"
 
     links { "kernel32", "user32", "lua51-static", "minhook.x64" }
 
+    staticruntime "on"
+
     filter { "configurations:Debug" }
+        runtime "Debug"
         targetdir "build/bin/debug"
         objdir "build/obj/debug"
         defines { "TDMP_DEBUG" }
 
     filter { "configurations:Release" }
+        runtime "Release"
         targetdir "build/bin/release"
         objdir "build/obj/release"
         defines { "TDMP_RELEASE" }

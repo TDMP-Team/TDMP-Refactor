@@ -12,13 +12,17 @@ project "launcher"
 
     links { "kernel32", "user32" }
 
+    staticruntime "on"
+
     filter { "configurations:Debug" }
+        runtime "Debug"
         targetdir "build/bin/debug"
         objdir "build/obj/debug"
         defines { "TDMP_DEBUG" }
         sanitize { "Address" }
 
     filter { "configurations:Release" }
+        runtime "Release"
         targetdir "build/bin/release"
         objdir "build/obj/release"
         defines { "TDMP_RELEASE" }

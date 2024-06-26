@@ -8,15 +8,15 @@ BOOL WINAPI DllMain(
     DWORD fdwReason,
     LPVOID lpvReserved)
 {
-    switch( fdwReason )  { 
-        case DLL_PROCESS_ATTACH:
-            DisableThreadLibraryCalls(hinstDLL);
-            console::init();
+    if (fdwReason == DLL_PROCESS_ATTACH) {
+    #if defined(TDMP_DEBUG)
+        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    #endif
 
-            CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(teardown::earlyEntryThread), nullptr, 0, nullptr);
-            break;
-        case DLL_PROCESS_DETACH:
-            break;
+        DisableThreadLibraryCalls(hinstDLL);
+        console::init();
+
+        CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(teardown::earlyEntryThread), nullptr, 0, nullptr);
     }
 
     return TRUE;

@@ -46,6 +46,7 @@ namespace tdmp::console {
     inline void write(const std::string& fmt, Args&&... args) {
         std::string formatted = std::vformat(fmt, std::make_format_args(args...));
         WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), formatted.c_str(), static_cast<DWORD>(formatted.length()), nullptr, nullptr);
+        OutputDebugStringA(formatted.c_str());
     }
 
     template<typename... Args>
@@ -61,6 +62,7 @@ namespace tdmp::console {
     inline void write(const std::wstring& fmt, Args&&... args) {
         std::wstring formatted = std::vformat(fmt, std::make_wformat_args(args...));
         WriteConsoleW(GetStdHandle(STD_OUTPUT_HANDLE), formatted.c_str(), static_cast<DWORD>(formatted.length()), nullptr, nullptr);
+        OutputDebugStringW(formatted.c_str());
     }
 
     template<typename... Args>

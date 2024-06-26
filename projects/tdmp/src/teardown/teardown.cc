@@ -21,7 +21,11 @@ lua_State* h_lua_newstate(lua_Alloc f, void* ud) {
 void teardown::initialize() {
     console::setStatus("Setting up hooks");
 
-    console::writeln("0x{:X}", (uintptr_t)tdmp::offsets::lua::lua_newstate);
+    // ASAN Test (failed, doesn't work with the DLL for some reason :/)
+    // int* ptr = (int*)malloc(sizeof(int));
+    // *ptr = 4;
+    // delete ptr;
+    // std::cout << *ptr << std::endl;
 
     mem::hooks::addHook("luaL_newstate", tdmp::offsets::lua::lua_newstate, &h_lua_newstate, &teardown::funcs::tlua_newstate);
 
