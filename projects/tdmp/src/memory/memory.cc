@@ -4,8 +4,8 @@
 
 using namespace tdmp;
 
-static uint64_t base = 0;
-static uint32_t moduleSize = 0;
+uint64_t mem::baseAddress = 0;
+uint32_t mem::moduleSize = 0;
 
 // Internal Functions
 //------------------------------------------------------------------------
@@ -44,14 +44,14 @@ static int64_t readPtr(uint64_t addr, uint32_t offset) {
 // Public Functions
 //------------------------------------------------------------------------
 bool mem::initializeMemory() {
-	if (base != 0) return true;
+	if (baseAddress != 0) return true;
 
 	MODULEINFO mi = { 0 };
 	if (!GetModuleInformation(GetCurrentProcess(), GetModuleHandleW(nullptr), &mi, sizeof(MODULEINFO))) {
 		return false;
 	}
 
-	base = reinterpret_cast<uint64_t>(mi.lpBaseOfDll);
+	baseAddress = reinterpret_cast<uint64_t>(mi.lpBaseOfDll);
 	moduleSize = mi.SizeOfImage;
 
 	return true;
@@ -61,19 +61,15 @@ uint64_t mem::findIDAPattern(const char* pattern_u8, bool relative) {
 	bool isRelative = relative || (pattern_u8[0] == 'E' && pattern_u8[1] == '8');
 
 	for (size_t i = 0; i < moduleSize - 1; ++i) {
-		if (patternCompare(reinterpret_cast<const uint8_t*>(base + i), pattern_u8)) {
+		if (patternCompare(reinterpret_cast<const uint8_t*>(baseAddress + i), pattern_u8)) {
 			if (isRelative) {
-				return readPtr(base + i, 1);
+				return readPtr(baseAddress + i, 1);
 			}
-			return base + i;
+			return baseAddress + i;
 		}
 	}
 
 	return 0;
-}
-
-uint64_t mem::baseAddress() {
-	return base;
 }
 
 bool mem::isSectionLoaded(HMODULE module, const char* section) {

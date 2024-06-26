@@ -36,7 +36,7 @@ static void generateHeaderStart(std::stringstream& header) {
         << "#include \"memory/memory.h\"\n\n"
         << "#define SET_AND_CHECK_OFFSET(addr, addr_name) \\\n"
         << "    do { \\\n"
-        << "        addr = base + addr; \\\n"
+        << "        addr = mem::baseAddress + addr; \\\n"
         << "        console::writeln(\"  {} = 0x{:X}\", addr_name, addr); \\\n"
         << "        if (!mem::isAddressExecutable(addr)) { \\\n"
         << "            failedOffsets.push_back(addr_name); \\\n"
@@ -47,13 +47,12 @@ static void generateHeaderStart(std::stringstream& header) {
 
 static void generateFunctionStart(std::stringstream& genFuncSS) {
     genFuncSS << "    inline bool generate(std::vector<std::string>& failedOffsets) {\n"
-        << "        const uint64_t base = mem::baseAddress();\n\n"
         << "        console::writeln(\"Offsets:\");\n\n";
 }
 
 static void processSignature(const std::string& nsName, const mem::signature& sig, std::stringstream& header, std::stringstream& genFuncSS, std::vector<std::string>& invalidSignatures) {
     const uint64_t address = mem::findIDAPattern(sig.sig, sig.relative);
-    const uint64_t offsetFromBase = address - mem::baseAddress();
+    const uint64_t offsetFromBase = address - mem::baseAddress;
 
     console::setStatus("Generating offset {} {:#x}", sig.name, offsetFromBase);
 
