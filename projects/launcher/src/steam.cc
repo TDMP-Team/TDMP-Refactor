@@ -69,5 +69,5 @@ bool steam::getGamePath(fs::path& outPath, std::wstring_view folderName, std::ws
         }
     }
 
-    return true;
+    return false;
 }
