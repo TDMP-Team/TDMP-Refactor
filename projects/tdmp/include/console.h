@@ -56,6 +56,21 @@ namespace tdmp::console {
         console::write(concatenatedString, std::forward<Args>(args)...);
     }
 
+    // Wide alternatives
+    template<typename... Args>
+    inline void write(const std::wstring& fmt, Args&&... args) {
+        std::wstring formatted = std::vformat(fmt, std::make_wformat_args(args...));
+        WriteConsoleW(GetStdHandle(STD_OUTPUT_HANDLE), formatted.c_str(), static_cast<DWORD>(formatted.length()), nullptr, nullptr);
+    }
+
+    template<typename... Args>
+    inline void writeln(const std::wstring& fmt, Args&&... args) {
+        std::wstring concatenatedString(fmt);
+        concatenatedString += L"\n";
+
+        console::write(concatenatedString, std::forward<Args>(args)...);
+    }
+
 }
 
 #endif // TDMP_CONSOLE_H
