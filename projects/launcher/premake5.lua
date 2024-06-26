@@ -16,6 +16,7 @@ project "launcher"
         targetdir "build/bin/debug"
         objdir "build/obj/debug"
         defines { "TDMP_DEBUG" }
+        sanitize { "Address" }
 
     filter { "configurations:Release" }
         targetdir "build/bin/release"

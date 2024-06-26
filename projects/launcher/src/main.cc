@@ -44,11 +44,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     //------------------------------------------------------------------------
     fs::path teardownPath;
     if (!steam::getGamePath(teardownPath, L"Teardown", teardownExeName)) {
-#if defined(TDMP_DEBUG)
+    #if defined(TDMP_DEBUG)
         util::displayError(L"Could not find {}, please download \"Steamless\" and unpack Teardown in order to debug properly", teardownExeName);
-#else
+    #else
         util::displayError(L"Could not locate teardown\nIf you have the game installed, please contact us so we can help fix the problem");
-#endif
+    #endif
         return 1;
     }
 
@@ -70,6 +70,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
                 fs::current_path().parent_path().parent_path().parent_path().parent_path() / L"tdmp\\build\\bin\\debug", // This is stupid but it works if you run the launcher from its directory
             #endif
         };
+
+
 
         for (const auto& searchPath : searchPaths) {
             const fs::path dllPath = searchPath / fs::path(DLL_NAME);
@@ -123,12 +125,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     std::wstring currentPath = util::s2ws(fs::current_path().string());
     std::wstring launchOptions = std::format(L"\"{}\" -launch-dir=\"{}\" {}", executablePath, currentPath, getCommandLineSkipFirst());
 
-    STARTUPINFOW si        = { 0 };
-    si.cb                  = sizeof(STARTUPINFOW);
-
-    si.dwFlags             = STARTF_USESTDHANDLES;
-    si.hStdOutput          = hStdOut;
-    si.hStdError           = hStdErr;
+    STARTUPINFOW si = { 0 };
+    si.cb           = sizeof(STARTUPINFOW);
+    si.dwFlags      = STARTF_USESTDHANDLES;
+    si.hStdOutput   = hStdOut;
+    si.hStdError    = hStdErr;
 
     DWORD exitCode = 0;
 
@@ -144,8 +145,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
         nullptr,
         (LPWSTR)executableRoot.data(),
         &si,
-        &pi))
-    {
+        &pi)) {
         util::displayError(L"CreateProcessW Failed");
         return 1;
     }
@@ -192,7 +192,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     ResumeThread(pi.hThread);
 
     SetConsoleCtrlHandler(consoleHandler, TRUE); // ! Does not work with AttachConsole (CTRL+C event)
-//     GenerateConsoleCtrlEvent(CTRL_C_EVENT, pi.dwProcessId);
+    //     GenerateConsoleCtrlEvent(CTRL_C_EVENT, pi.dwProcessId);
 
     WaitForSingleObject(pi.hThread, INFINITE);
 
