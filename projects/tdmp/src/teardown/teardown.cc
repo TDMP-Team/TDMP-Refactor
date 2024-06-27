@@ -10,20 +10,20 @@ using namespace tdmp;
 // Hooked Functions
 //------------------------------------------------------------------------
 lua_State* h_lua_newstate(lua_Alloc f, void* ud) {
-    lua_State* L = teardown::funcs::tlua_newstate(f, ud);
+    lua_State* L = funcs::lua::lua_newstate(f, ud);
     console::writeln("Lua State: 0x{:X}", (uintptr_t)L);
 
     return L;
 }
 
 structures::teardown* h_teardown_initialize(structures::teardown* magicShit, DWORD** a2, int64_t a3) {
-    structures::teardown* result = teardown::funcs::tinitialize(magicShit, a2, a3);
+    structures::teardown* result = funcs::teardown::initialize(magicShit, a2, a3);
     console::writeln("Teardown Initialize?");
 
     tdmp::structures::small_string ss;
-    teardown::small_string::fromCString(&ss, "options.audio.menumusic");
+    funcs::small_string::fromCString(&ss, "options.audio.menumusic");
 
-    int num = teardown::registry::getInt(result->RegistryThingyMbob, (uint8_t**)&ss);
+    int num = funcs::registry::getInt(result->RegistryThingyMbob, (uint8_t**)&ss);
 
     return result;
 }
@@ -33,20 +33,20 @@ structures::teardown* h_teardown_initialize(structures::teardown* magicShit, DWO
 void teardown::initialize() {
     console::setStatus("Setting up hooks");
 
-    mem::hooks::addHook("Teardown::Initialize", tdmp::offsets::teardown::initialize, &h_teardown_initialize, &teardown::funcs::tinitialize);
-    mem::hooks::addHook("luaL_newstate", tdmp::offsets::lua::lua_newstate, &h_lua_newstate, &teardown::funcs::tlua_newstate);
+    mem::hooks::addHook("Teardown::Initialize", tdmp::offsets::teardown::initialize, &h_teardown_initialize, &funcs::teardown::initialize);
+    mem::hooks::addHook("luaL_newstate", tdmp::offsets::lua::lua_newstate, &h_lua_newstate, &funcs::lua::lua_newstate);
 
-    teardown::small_string::fromCString = (teardown::types::small_string::tfromCString)(tdmp::offsets::small_string::fromCString);
-    teardown::small_string::free = (teardown::types::small_string::tFree)(tdmp::offsets::small_string::free);
+    funcs::small_string::fromCString = (funcs::types::small_string::tfromCString)(tdmp::offsets::small_string::fromCString);
+    funcs::small_string::free = (funcs::types::small_string::tfree)(tdmp::offsets::small_string::free);
 
-    teardown::registry::getInt = (teardown::types::registry::tgetInt)(tdmp::offsets::registry::getInt);
+    funcs::registry::getInt = (funcs::types::registry::tgetInt)(tdmp::offsets::registry::getInt);
 
     // TODO: Figure out how to set a custom tag for the logging function
-    teardown::funcs::tlog = (teardown::types::tlog)(tdmp::offsets::game::log);
-    teardown::funcs::tlog(log_level::debug, "Debug");
-    teardown::funcs::tlog(log_level::info, "Info");
-    teardown::funcs::tlog(log_level::warning, "Warning");
-    teardown::funcs::tlog(log_level::error, "Error");
+    funcs::game::log = (funcs::types::game::tlog)(tdmp::offsets::game::log);
+    //funcs::game::log(log_level::debug, "Debug");
+    //funcs::game::log(log_level::info, "Info");
+    //funcs::game::log(log_level::warning, "Warning");
+    //funcs::game::log(log_level::error, "Error");
 }
 
 void teardown::earlyEntryThread() {
