@@ -21,11 +21,29 @@ static constexpr mem::signature gameSignatures[] = {
     {"log", "E8 ? ? ? ? 3B 37"}
 };
 
+static constexpr mem::signature tdSignatures[] = {
+    {"initialize", "4C 89 44 24 18 48 89 4C 24 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D 6C"}
+};
+
+static constexpr mem::signature registrySignatures[] = {
+    {"getInt", "40 53 48 83 EC 40 45 33 C0 E8 ?? ?? ?? ?? 48 8D 4C 24 20 48 85 C0 74 0B 48 8D 50 28 E8 ?? ?? ?? ?? EB 06 E8 ?? ?? ?? ?? 90 48 8D 4C"}
+};
+
+static constexpr mem::signature smallStringSignatures[] = {
+    {"fromCString", "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 48 83 EC 20 48 85 D2 C6"},
+    {"free", "48 83 EC 28 80 79 1F 00 74 09"}
+};
+
 // All Signatures
 //------------------------------------------------------------------------
+#define ADD_NAMESAPCE(name, arr) {##name, {arr, sizeof(arr) / sizeof(arr[0])}}
+
 static constexpr signature_namespace signatureNamespaces[] = {
-    {"lua", {luaSignatures, sizeof(luaSignatures) / sizeof(luaSignatures[0])}},
-    {"game", {gameSignatures, sizeof(gameSignatures) / sizeof(gameSignatures[0])}}
+    ADD_NAMESAPCE("lua", luaSignatures),
+    ADD_NAMESAPCE("game", gameSignatures),
+    ADD_NAMESAPCE("teardown", tdSignatures),
+    ADD_NAMESAPCE("registry", registrySignatures),
+    ADD_NAMESAPCE("small_string", smallStringSignatures)
 };
 
 static void generateHeaderStart(std::stringstream& header) {

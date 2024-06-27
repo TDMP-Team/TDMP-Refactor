@@ -60,15 +60,22 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     std::wstring dllPathString = L"";
 
     {
+        /* Priority Order:
+         * 1. Current path
+         * 2. (If debug) Debug folder
+         * 3. Teardown root directory
+        */
+
         // Places we want to search for the dll
         const std::wstring searchPaths[] = {
             std::wstring(fs::current_path()),
-            executableRoot,
 
             #if TDMP_DEBUG
                 fs::current_path().parent_path() / L"tdmp\\build\\bin\\debug",
                 fs::current_path().parent_path().parent_path().parent_path().parent_path() / L"tdmp\\build\\bin\\debug", // This is stupid but it works if you run the launcher from its directory
             #endif
+
+            executableRoot
         };
 
 
