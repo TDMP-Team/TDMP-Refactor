@@ -1,5 +1,5 @@
-#ifndef TDMP_UTIL_H
-#define TDMP_UTIL_H
+#ifndef TDMP_SHARED_UTIL_H
+#define TDMP_SHARED_UTIL_H
 
 #include "pch.h"
 
@@ -196,4 +196,4 @@ commandLineToArgvA(
 
 }
 
-#endif // TDMP_UTIL_H
+#endif // TDMP_SHARED_UTIL_H

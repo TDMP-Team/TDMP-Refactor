@@ -2,7 +2,7 @@
 #define TDMP_CONSOLE_H
 
 #include "pch.h"
-#include "util/util.h"
+#include "shared/util/util.h"
 
 namespace tdmp::console {
 
