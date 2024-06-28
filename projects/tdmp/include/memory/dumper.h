@@ -78,7 +78,7 @@ namespace tdmp::dumper {
 
     // All Signatures
     //------------------------------------------------------------------------
-#define ADD_NAMESAPCE(name, arr) {##name, {arr, sizeof(arr) / sizeof(arr[0])}}
+    #define ADD_NAMESAPCE(name, arr) {##name, {arr, sizeof(arr) / sizeof(arr[0])}}
 
     static constexpr signature_namespace signatureNamespaces[] = {
         ADD_NAMESAPCE("lua", luaSignatures),
