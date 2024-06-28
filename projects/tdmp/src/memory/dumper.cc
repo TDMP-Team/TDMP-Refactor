@@ -85,7 +85,6 @@ static void generateTemplate(const dumper::signature_namespace* signatureNamespa
     }
 }
 
-
 // Public Functions
 //------------------------------------------------------------------------
 bool dumper::dump() {
