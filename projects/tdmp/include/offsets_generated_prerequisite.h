@@ -15,4 +15,7 @@
         } \
     } while (0)
 
+#define ASSIGN_FUNCTION(ns, func) \
+    funcs::##ns::##func = (funcs::types::##ns::t##func)(tdmp::offsets::##ns::##func); \
+
 #endif // TDMP_GENERATED_OFFSETS_PREREQUISITE_H

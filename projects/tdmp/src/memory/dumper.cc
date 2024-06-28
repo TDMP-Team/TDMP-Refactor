@@ -28,14 +28,22 @@ namespace tdmp {{
         namespace types {{
 {4}        }}
 
-{5}    }}
+{5}
+        inline bool assign() {{
+            console::writeln("Assigning functions");
+
+{6}
+            return true;
+        }}
+    }}
 }}
 
 #endif // TDMP_GENERATED_OFFSETS_H)";
 
 static void processSignature(const std::string& nsName, const dumper::dumper_signature& sig,
                              std::stringstream& offsets, std::stringstream& checks,
-                             std::stringstream& types, std::stringstream& functions) {
+                             std::stringstream& types, std::stringstream& functions,
+                             std::stringstream& assignFuncs) {
     const uint64_t address = mem::findIDAPattern(sig.sig, false);
     const uint64_t offsetFromBase = address - mem::baseAddress;
 
@@ -45,6 +53,7 @@ static void processSignature(const std::string& nsName, const dumper::dumper_sig
     offsets << std::format("            inline uint64_t {0} = {1};\n", sig.name, offsetStr);
 
     checks << std::format("            SET_AND_CHECK_OFFSET({0}::{1}, \"{0}::{1}\");\n", nsName, sig.name);
+    assignFuncs << std::format("            ASSIGN_FUNCTION({0}, {1});\n", nsName, sig.name);
 
     console::writeln("{}::{} = {:#x}", nsName, sig.name, offsetFromBase);
 
@@ -58,7 +67,8 @@ static void processSignature(const std::string& nsName, const dumper::dumper_sig
 
 static void generateTemplate(const dumper::signature_namespace* signatureNamespaces, size_t namespaceCount,
                              std::stringstream& offsets, std::stringstream& checks,
-                             std::stringstream& types, std::stringstream& functions) {
+                             std::stringstream& types, std::stringstream& functions,
+                             std::stringstream& assignFuncs) {
     for (size_t i = 0; i < namespaceCount; ++i) {
         const auto& ns = signatureNamespaces[i];
         offsets << std::format("        namespace {0} {{\n", ns.name);
@@ -66,7 +76,7 @@ static void generateTemplate(const dumper::signature_namespace* signatureNamespa
         functions << std::format("        namespace {0} {{\n", ns.name);
 
         for (const auto& sig : ns.signatures) {
-            processSignature(ns.name, sig, offsets, checks, types, functions);
+            processSignature(ns.name, sig, offsets, checks, types, functions, assignFuncs);
         }
 
         offsets << "        }\n\n";
@@ -79,9 +89,9 @@ static void generateTemplate(const dumper::signature_namespace* signatureNamespa
 // Public Functions
 //------------------------------------------------------------------------
 bool dumper::dump() {
-    std::stringstream offsets, checks, types, functions;
+    std::stringstream offsets, checks, types, functions, assignFuncs;
 
-    generateTemplate(signatureNamespaces, std::size(signatureNamespaces), offsets, checks, types, functions);
+    generateTemplate(signatureNamespaces, std::size(signatureNamespaces), offsets, checks, types, functions, assignFuncs);
 
     std::string result = std::format(headerTemplate,
                                      __DATE__,
@@ -89,7 +99,8 @@ bool dumper::dump() {
                                      offsets.str(),
                                      checks.str(),
                                      types.str(),
-                                     functions.str());
+                                     functions.str(),
+                                     assignFuncs.str());
 
     console::writeln("\n{}", result);
     util::copyToClipboard(result);

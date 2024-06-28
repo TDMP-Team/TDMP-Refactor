@@ -37,13 +37,7 @@ void teardown::initialize() {
     mem::hooks::addHook("Teardown::Initialize", tdmp::offsets::teardown::initialize, &h_teardown_initialize, &funcs::teardown::initialize);
     mem::hooks::addHook("luaL_newstate", tdmp::offsets::lua::lua_newstate, &h_lua_newstate, &funcs::lua::lua_newstate);
 
-    funcs::small_string::fromCString = (funcs::types::small_string::tfromCString)(tdmp::offsets::small_string::fromCString);
-    funcs::small_string::free = (funcs::types::small_string::tfree)(tdmp::offsets::small_string::free);
-
-    funcs::registry::getInt = (funcs::types::registry::tgetInt)(tdmp::offsets::registry::getInt);
-
     // TODO: Figure out how to set a custom tag for the logging function
-    funcs::game::log = (funcs::types::game::tlog)(tdmp::offsets::game::log);
     funcs::game::log(types::log_level::debug, "Debug");
     funcs::game::log(types::log_level::info, "Info");
     funcs::game::log(types::log_level::warning, "Warning");
@@ -101,6 +95,9 @@ void teardown::earlyEntryThread() {
 
         ExitProcess(1);
     }
+
+    // Assign all the functions to their addresses
+    funcs::assign();
 
     if (MH_STATUS status = MH_Initialize(); status != MH_OK) {
         std::wstring err = util::s2ws(MH_StatusToString(status));
