@@ -6,8 +6,8 @@
 namespace tdmp::dumper {
 
     struct function_type {
-        const char* returnType;
-        const char* arguments;
+        const char* returnType = nullptr;
+        const char* arguments = nullptr;
 
         constexpr function_type() = default;
         constexpr function_type(const char* r, const char* a) : returnType(r), arguments(a) {}
@@ -16,7 +16,7 @@ namespace tdmp::dumper {
     struct dumper_signature {
         const char* name;
         const char* sig;
-        std::optional <function_type> function;
+        std::optional<function_type> function;
 
         constexpr dumper_signature(const char* n, const char* s, std::optional<function_type> optFunction = std::nullopt) : name(n), sig(s), function(optFunction) {}
     };
