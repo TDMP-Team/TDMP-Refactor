@@ -44,10 +44,10 @@ void teardown::initialize() {
 
     // TODO: Figure out how to set a custom tag for the logging function
     funcs::game::log = (funcs::types::game::tlog)(tdmp::offsets::game::log);
-    //funcs::game::log(log_level::debug, "Debug");
-    //funcs::game::log(log_level::info, "Info");
-    //funcs::game::log(log_level::warning, "Warning");
-    //funcs::game::log(log_level::error, "Error");
+    funcs::game::log(types::log_level::debug, "Debug");
+    funcs::game::log(types::log_level::info, "Info");
+    funcs::game::log(types::log_level::warning, "Warning");
+    funcs::game::log(types::log_level::error, "Error");
 }
 
 void teardown::earlyEntryThread() {

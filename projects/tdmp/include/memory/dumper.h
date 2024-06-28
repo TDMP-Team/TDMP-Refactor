@@ -5,6 +5,9 @@
 
 namespace tdmp::dumper {
 
+    // Structures
+    //------------------------------------------------------------------------
+    // This is used in the dumper to generate the functions and types, you can see this below where the signatures are.
     struct function_type {
         const char* returnType = nullptr;
         const char* arguments = nullptr;
@@ -42,7 +45,7 @@ namespace tdmp::dumper {
         {
             "log",
             "E8 ? ? ? ? 3B 37",
-            function_type("void", "log_level level, const char* fmt, ...")
+            function_type("void", "tdmp::teardown::types::log_level level, const char* fmt, ...")
         }
     };
 

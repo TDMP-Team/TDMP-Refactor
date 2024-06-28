@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "teardown/structures.h"
 
-namespace tdmp::teardown {
+namespace tdmp::teardown::types {
 
     // Enums
     //------------------------------------------------------------------------

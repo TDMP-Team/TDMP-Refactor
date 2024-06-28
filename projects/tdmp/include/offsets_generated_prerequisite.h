@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "memory/memory.h"
+#include "teardown/types.h"
 #include "teardown/structures.h"
 
 #define SET_AND_CHECK_OFFSET(addr, addr_name) \
@@ -13,12 +14,5 @@
             failedOffsets.push_back(addr_name); \
         } \
     } while (0)
-
-enum class log_level : uint8_t {
-    debug = 0,
-    info = 1,
-    warning = 2,
-    error = 3
-};
 
 #endif // TDMP_GENERATED_OFFSETS_PREREQUISITE_H
