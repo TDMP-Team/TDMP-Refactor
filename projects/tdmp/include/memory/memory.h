@@ -19,7 +19,6 @@ namespace tdmp::mem {
     uint64_t findIDAPattern(const char* pattern_u8, bool relative = false);
 
     bool initializeMemory();
-    bool dumpOffsets();
 
     bool isSectionLoaded(HMODULE module, const char* section);
     void waitForSection(HMODULE hModule, const char* sectionName);

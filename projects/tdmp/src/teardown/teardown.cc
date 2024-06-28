@@ -1,8 +1,9 @@
 #include "pch.h"
 #include "teardown/teardown.h"
 #include "teardown/types.h"
-#include "util/util.h"
+#include "shared/util/util.h"
 #include "memory/hooks.h"
+#include "memory/dumper.h"
 #include "offsets_generated.h"
 
 using namespace tdmp;
@@ -78,7 +79,7 @@ void teardown::earlyEntryThread() {
     mem::waitForSection(GetModuleHandle(NULL), ".data");
 
     if (args.get<bool>("-dump")) {
-        mem::dumpOffsets();
+        dumper::dump();
         ExitProcess(0);
     }
 
