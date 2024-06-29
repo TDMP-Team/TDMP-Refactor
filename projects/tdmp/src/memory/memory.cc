@@ -19,6 +19,7 @@ static bool patternCompare(const uint8_t* data, const char* pattern_u8) {
 
         if (*pattern == '?') {
             ++data;
+
             if (*(pattern + 1) == '?') {
                 ++pattern;
             }
@@ -28,11 +29,14 @@ static bool patternCompare(const uint8_t* data, const char* pattern_u8) {
             if (*data != byte) {
                 return false;
             }
+
             ++data;
             ++pattern;
         }
+
         ++pattern;
     }
+
     return true;
 }
 
@@ -124,4 +128,81 @@ void mem::waitForSection(HMODULE hModule, const char* sectionName) {
     std::wstring errorMsg = L"Timeout waiting for section " + std::wstring(sectionName, sectionName + strlen(sectionName)) + L" to load";
     util::displayError(errorMsg.c_str());
     ExitProcess(1);
+}
+
+bool tdmp::mem::findGameFunctions(std::vector<game_function*>& functions) {
+    MODULEINFO modInfo;
+    HMODULE hModule = GetModuleHandle(NULL);
+    if (!GetModuleInformation(GetCurrentProcess(), hModule, &modInfo, sizeof(MODULEINFO))) {
+        util::displayLastError(L"GetModuleInformation Failed");
+        return false;
+    }
+
+    BYTE* baseAddress = (BYTE*)modInfo.lpBaseOfDll;
+    IMAGE_DOS_HEADER* dosHeader = (IMAGE_DOS_HEADER*)baseAddress;
+    IMAGE_NT_HEADERS* ntHeaders = (IMAGE_NT_HEADERS*)(baseAddress + dosHeader->e_lfanew);
+    IMAGE_SECTION_HEADER* section = IMAGE_FIRST_SECTION(ntHeaders);
+
+    uintptr_t rdataStart = 0, rdataEnd = 0;
+    uintptr_t dataStart = 0, dataEnd = 0;
+
+    for (int i = 0; i < ntHeaders->FileHeader.NumberOfSections; ++i, ++section) {
+        std::string sectionName((char*)section->Name);
+        if (sectionName == ".rdata") {
+            rdataStart = (uintptr_t)(baseAddress + section->VirtualAddress);
+            rdataEnd = rdataStart + section->Misc.VirtualSize;
+        } else if (sectionName == ".data") {
+            dataStart = (uintptr_t)(baseAddress + section->VirtualAddress);
+            dataEnd = dataStart + section->Misc.VirtualSize;
+        }
+    }
+
+    MEMORY_BASIC_INFORMATION memInfo;
+
+    // Scan .rdata section for strings
+    for (uintptr_t addr = rdataStart; addr < rdataEnd; addr += memInfo.RegionSize) {
+        if (!VirtualQuery((LPCVOID)addr, &memInfo, sizeof(memInfo)) || memInfo.State != MEM_COMMIT || memInfo.Protect == PAGE_NOACCESS)
+            continue;
+
+        std::vector<char> buffer(memInfo.RegionSize);
+        SIZE_T bytesRead;
+        if (!ReadProcessMemory(GetCurrentProcess(), (LPCVOID)addr, buffer.data(), memInfo.RegionSize, &bytesRead))
+            continue;
+
+        for (auto& func : functions) {
+            auto it = std::search(buffer.begin(), buffer.begin() + bytesRead, func->name.begin(), func->name.end());
+            if (it != buffer.begin() + bytesRead) {
+                uintptr_t stringAddress = addr + std::distance(buffer.begin(), it);
+                func->address = stringAddress; // Temporarily store the string address
+            }
+        }
+    }
+
+    // Scan .data section for references to the strings
+    for (uintptr_t addr = dataStart; addr < dataEnd; addr += memInfo.RegionSize) {
+        if (!VirtualQuery((LPCVOID)addr, &memInfo, sizeof(memInfo)) || memInfo.State != MEM_COMMIT || memInfo.Protect == PAGE_NOACCESS)
+            continue;
+
+        std::vector<uintptr_t> buffer(memInfo.RegionSize / sizeof(uintptr_t));
+        SIZE_T bytesRead;
+        if (!ReadProcessMemory(GetCurrentProcess(), (LPCVOID)addr, buffer.data(), memInfo.RegionSize, &bytesRead))
+            continue;
+
+        for (auto& func : functions) {
+            if (func->address == 0)
+                continue;
+
+            for (size_t i = 0; i < buffer.size(); ++i) {
+                if (buffer[i] == func->address) {
+                    uintptr_t potentialFuncAddr = addr + (i - 1) * sizeof(uintptr_t);
+                    uintptr_t funcAddr;
+                    if (ReadProcessMemory(GetCurrentProcess(), (LPCVOID)potentialFuncAddr, &funcAddr, sizeof(funcAddr), &bytesRead)) {
+                        func->address = funcAddr;
+                    }
+                }
+            }
+        }
+    }
+
+    return true;
 }

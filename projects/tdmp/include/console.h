@@ -39,6 +39,11 @@ namespace tdmp::console {
         freopen_s(&f, "CONOUT$", "w", stdout);
         freopen_s(&f, "CONOUT$", "w", stderr);
 
+        DWORD mode = 0;
+        GetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), reinterpret_cast<LPDWORD>(&mode));
+        mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+        SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), mode);
+
         defaultConsoleTitle = getConsoleTitle();
     }
 

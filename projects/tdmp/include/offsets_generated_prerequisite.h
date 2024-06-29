@@ -6,16 +6,19 @@
 #include "teardown/types.h"
 #include "teardown/structures.h"
 
-#define SET_AND_CHECK_OFFSET(addr, addr_name) \
+#define SET_AND_CHECK_OFFSET(addr, offName) \
     do { \
         addr = mem::baseAddress + addr; \
-        console::writeln("  {} = 0x{:X}", addr_name, addr); \
+        console::writeln("  {} = 0x{:X}", offName, addr); \
+        console::setStatus("Updating offset {}", offName); \
         if (!mem::isAddressExecutable(addr)) { \
-            failedOffsets.push_back(addr_name); \
+            failedOffsets.push_back(offName); \
         } \
     } while (0)
 
 #define ASSIGN_FUNCTION(ns, func) \
     funcs::##ns::##func = (funcs::types::##ns::t##func)(tdmp::offsets::##ns::##func); \
+    console::writeln("Assigning function {}::{} to {:x}", #ns, #func, tdmp::offsets::##ns::##func); \
+    console::setStatus("Assigning function {}::{} to {:x}", #ns, #func, tdmp::offsets::##ns::##func);
 
 #endif // TDMP_GENERATED_OFFSETS_PREREQUISITE_H

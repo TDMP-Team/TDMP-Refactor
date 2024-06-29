@@ -106,14 +106,3 @@ bool dumper::dump() {
 
     return true;
 }
-
-bool mem::isAddressExecutable(uintptr_t address) {
-    MEMORY_BASIC_INFORMATION mbi;
-    if (VirtualQuery((void*)address, &mbi, sizeof(mbi))) {
-        return (mbi.Protect & PAGE_EXECUTE_READ) ||
-            (mbi.Protect & PAGE_EXECUTE_READWRITE) ||
-            (mbi.Protect & PAGE_EXECUTE_WRITECOPY);
-    }
-
-    return false;
-}
