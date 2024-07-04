@@ -3,7 +3,7 @@
 
 #include "pch.h"
 
-namespace tdmp::steam {
+namespace mp::steam {
 
     bool getPath(std::wstring& outPath);
     bool getGamePath(fs::path& outPath, std::wstring_view folderName, std::wstring_view executableName);

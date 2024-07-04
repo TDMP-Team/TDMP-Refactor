@@ -1,116 +1,109 @@
 #include "pch.h"
 #include "teardown/teardown.h"
+#include "teardown/lua_helpers.h"
 #include "teardown/types.h"
 #include "shared/util/util.h"
 #include "memory/hooks.h"
 #include "memory/dumper.h"
 #include "offsets_generated.h"
 
-using namespace tdmp;
+using namespace mp;
+using namespace teardown;
+
+static teardown::types::game* game;
 
 // Hooked Functions
 //------------------------------------------------------------------------
 lua_State* h_lua_newstate(lua_Alloc f, void* ud) {
     lua_State* L = funcs::lua::lua_newstate(f, ud);
-    console::writeln("Lua State: 0x{:X}", (uintptr_t)L);
+    //console::writeln("Lua State: 0x{:X}", (uintptr_t)L);
 
     return L;
 }
 
-structures::teardown* h_teardown_initialize(structures::teardown* magicShit, DWORD** a2, int64_t a3) {
-    structures::teardown* result = funcs::teardown::initialize(magicShit, a2, a3);
+teardown::types::game* h_teardown_initialize(teardown::types::game* magicShit, DWORD** a2, int64_t a3) {
+    game = funcs::teardown::initialize(magicShit, a2, a3);
+
     console::writeln("Teardown Initialize?");
 
-    tdmp::structures::small_string ss;
-    funcs::small_string::fromCString(&ss, "options.audio.menumusic");
+    teardown::types::td_string str("options.audio.menumusic");
+    //funcs::small_string::fromCString(&ss, "options.audio.menumusic");
 
-    int num = funcs::registry::getInt(result->RegistryThingyMbob, (uint8_t**)&ss);
+    int num = funcs::registry::getInt(game->registry, &str);
 
-    return result;
+    return game;
 }
 
-/*
-TODO: Rename `func.address` to `func.offset` and use it only in the dumper
-The dumper will need to be modified in order to take runtime things, right now it just takes constexpr stuff
-But we will make it a vector and add these to it
+void h_teardown_update(types::game* game, int64_t input) {
+    funcs::teardown::update(game, input);
+    //game->splashProgress = 1.0f;
 
-With these functions, I should be able to automatically find the offsets to specific members in the structures
-GetPlayerHealth for example:
+    types::player_t* ply = (types::player_t*)(game->player);
+    types::scene_t* scene = (types::scene_t*)(game->scene);
+    types::something* something = (types::something*)(game);
 
-```
-sub_7FF7FAF03F60          sub_7FF7FAF03F60 proc near              ; DATA XREF: .data:off_7FF7FB609978↓o
-sub_7FF7FAF03F60      000                 mov     rax, cs:globalMagicShit <-- Teardown's main big structure
-sub_7FF7FAF03F60+7    000                 mov     rcx, [rax+0B8h] <-- Player strucure
-sub_7FF7FAF03F60+E    000                 movss   xmm1, dword ptr [rcx+1B0h] <-- Health offset in player structure
-sub_7FF7FAF03F60+16   000                 mov     rcx, r8
-sub_7FF7FAF03F60+19   000                 jmp     Lua__pushnumber
-sub_7FF7FAF03F60+19       sub_7FF7FAF03F60 endp
-```
+    if (scene) {
+        scene->firesystem->fires.reset();
+        scene->projectiles.reset();
+    }
 
-So I can just give it the function address and give it some sort of hint as to where the offset will be
-This should pretty much future-proof it for updates (unless the C Lua function itself changes)
+    ply->health = 1;
 
-With this, I won't need to reverse engineer all the structures either, so I can save a lot of time.
-*/
+    if (GetAsyncKeyState(VK_F1) & 0x8000) {
+        //console::writeln("TEST: {}", *((float*)((char*)game->qwordB8 + 0x15c)));
+
+        console::writeln("Health: {}\nSpeed: {}", ply->health, ply->walkingSpeed);
+        console::writeln("Grabbed body & shape: {} {}",
+                         (ply->grabbedBody != nullptr ? ply->grabbedBody->handle : 0),
+                         (ply->grabbedShape != nullptr ? ply->grabbedShape->handle : 0)
+        );
+
+        console::writeln("Transform: ({} {} {}) ({} {} {} {})", ply->pos.x, ply->pos.y, ply->pos.z,
+                         0,
+                         0,
+                         0,
+                         0
+        );
+        console::writeln("Velocity: {} {} {}", ply->velocity.x, ply->velocity.y, ply->velocity.z);
+        console::writeln("Grounded: {}", ply->isGrounded != 0);
+
+        //if (scene != nullptr) {
+        //    console::writeln("Vehicle: {}", scene->activeVehicle != nullptr ? scene->activeVehicle->handle : 0);
+        //}
+        //ply->walkingSpeed = 15;
+    } else if (GetAsyncKeyState(VK_F2) & 0x8000) {
+        something->respawnFlag = true;
+        //ply->walkingSpeed = 7;
+    } else if (GetAsyncKeyState(VK_F3) & 0x8000) {
+        for (uint32_t i = 0; i < scene->bodies.size(); ++i) {
+            types::body* body = scene->bodies[i];
+            console::writeln("{}", body->handle);
+        }
+    }
+}
+
+typedef int (*tLuaFunction)(const types::script_core_t* pSC, lua_State* L, const char* cFunctionName);
+
+void h_script_core_registerLuaFunctions(mp::teardown::types::script_core_t* scriptCore) {
+    console::writeln("Registering functions for {}", scriptCore->path.c_str());
+
+    lua_helpers::registerLuaFunction(scriptCore, types::td_string("MP_GetVersion"), [](types::script_core_t* scriptCore, lua_State* L) -> int {
+        lua_pushstring(L, "not-set");
+        return 1;
+    });
+
+    funcs::script_core::registerLuaFunctions(scriptCore);
+}
 
 // Public Functions
 //------------------------------------------------------------------------
 void teardown::initialize() {
-    std::vector<mem::game_function*> functions = {
-        &game_lua_funcs::player::GetPlayerHealth,
-        &game_lua_funcs::player::GetPlayerPos,
-        &game_lua_funcs::player::GetPlayerTransform,
-        &game_lua_funcs::player::SetPlayerTransform,
-        &game_lua_funcs::player::SetPlayerZoom,
-        &game_lua_funcs::player::SetPlayerGroundVelocity,
-        &game_lua_funcs::player::GetPlayerCameraTransform,
-        &game_lua_funcs::player::SetPlayerCameraOffsetTransform,
-        &game_lua_funcs::player::SetPlayerSpawnTransform,
-        &game_lua_funcs::player::SetPlayerSpawnHealth,
-        &game_lua_funcs::player::SetPlayerSpawnTool,
-        &game_lua_funcs::player::GetPlayerVelocity,
-        &game_lua_funcs::player::SetPlayerVehicle,
-        &game_lua_funcs::player::SetPlayerVelocity,
-        &game_lua_funcs::player::GetPlayerVehicle,
-        &game_lua_funcs::player::IsPlayerGrounded,
-        &game_lua_funcs::player::GetPlayerGrabShape,
-        &game_lua_funcs::player::GetPlayerGrabBody,
-        &game_lua_funcs::player::ReleasePlayerGrab,
-        &game_lua_funcs::player::GetPlayerPickShape,
-        &game_lua_funcs::player::GetPlayerPickBody,
-        &game_lua_funcs::player::GetPlayerInteractShape,
-        &game_lua_funcs::player::GetPlayerInteractBody,
-        &game_lua_funcs::player::SetPlayerScreen,
-        &game_lua_funcs::player::GetPlayerScreen,
-        &game_lua_funcs::player::SetPlayerHealth,
-        &game_lua_funcs::player::GetPlayerHealth,
-        &game_lua_funcs::player::SetPlayerRegenerationState,
-        &game_lua_funcs::player::RespawnPlayer,
-        &game_lua_funcs::player::GetPlayerWalkingSpeed,
-        &game_lua_funcs::player::SetPlayerWalkingSpeed,
-        &game_lua_funcs::player::GetPlayerParam,
-        &game_lua_funcs::player::SetPlayerParam,
-        &game_lua_funcs::player::RegisterTool,
-        &game_lua_funcs::player::GetToolBody,
-        &game_lua_funcs::player::SetToolTransform
-    };
-
-    if (!mem::findGameFunctions(functions)) {
-        return;
-    }
-
-    for (const auto& func : functions) {
-        if (func->address != 0) {
-            console::writeln("Function '{}' found at address: {:x}", func->name, func->address);
-        } else {
-            console::writeln("Function '{}' not found", func->name);
-        }
-    }
-
     console::setStatus("Setting up hooks");
 
-    mem::hooks::addHook("Teardown::Initialize", tdmp::offsets::teardown::initialize, &h_teardown_initialize, &funcs::teardown::initialize);
-    mem::hooks::addHook("luaL_newstate", tdmp::offsets::lua::lua_newstate, &h_lua_newstate, &funcs::lua::lua_newstate);
+    mem::hooks::addHook("game::ctor", mp::offsets::teardown::initialize, &h_teardown_initialize, &funcs::teardown::initialize);
+    mem::hooks::addHook("game::update", mp::offsets::teardown::update, &h_teardown_update, &funcs::teardown::update);
+    mem::hooks::addHook("luaL_newstate", mp::offsets::lua::lua_newstate, &h_lua_newstate, &funcs::lua::lua_newstate);
+    mem::hooks::addHook("script_core::registerLuaFunctions", mp::offsets::script_core::registerLuaFunctions, &h_script_core_registerLuaFunctions, &funcs::script_core::registerLuaFunctions);
 
     // TODO: Figure out how to set a custom tag for the logging function
     funcs::game::log(types::log_level::debug, "Debug");
@@ -119,21 +112,12 @@ void teardown::initialize() {
     funcs::game::log(types::log_level::error, "Error");
 }
 
-bool mem::isAddressExecutable(uintptr_t address) {
-    MEMORY_BASIC_INFORMATION mbi;
-    if (VirtualQuery((void*)address, &mbi, sizeof(mbi))) {
-        return (mbi.Protect & PAGE_EXECUTE_READ) ||
-            (mbi.Protect & PAGE_EXECUTE_READWRITE) ||
-            (mbi.Protect & PAGE_EXECUTE_WRITECOPY);
-    }
-    return false;
-}
-
 void teardown::earlyEntryThread() {
     // Parse Arguments
     //------------------------------------------------------------------------
     argparse::ArgumentParser args("TDMP");
     args.add_argument("-dump").default_value(false).implicit_value(true);
+    args.add_argument("-generate-structs").default_value(false).implicit_value(true);
 
     {
         int argc;
@@ -154,12 +138,22 @@ void teardown::earlyEntryThread() {
         return;
     }
 
-    // Wait for data section to load and update all the offsets with the base address
-    mem::waitForSection(GetModuleHandle(NULL), ".data");
+    {
+        bool wasDumped = false;
 
-    if (args.get<bool>("-dump")) {
-        dumper::dump();
-        ExitProcess(0);
+        if (args.get<bool>("-dump")) {
+            dumper::dump(false);
+            wasDumped = true;
+        }
+
+        if (args.get<bool>("-generate-structs")) {
+            dumper::dump(true);
+            wasDumped = true;
+        }
+
+        if (wasDumped) {
+            ExitProcess(0);
+        }
     }
 
     console::setStatus("Generating addresses");
@@ -183,6 +177,7 @@ void teardown::earlyEntryThread() {
 
     // Assign all the functions to their addresses
     funcs::assign();
+    lua_funcs::assign();
 
     if (MH_STATUS status = MH_Initialize(); status != MH_OK) {
         std::wstring err = util::s2ws(MH_StatusToString(status));
@@ -191,6 +186,5 @@ void teardown::earlyEntryThread() {
     }
 
     teardown::initialize();
-
     console::setStatus("");
 }

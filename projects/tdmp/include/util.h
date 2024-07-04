@@ -4,18 +4,18 @@
 #include "pch.h"
 #include "shared/util/util.h"
 
-namespace tdmp::util {
+namespace mp::util {
 
-    static void copyToClipboard(const std::string& text) {
+    static void copyToClipboard(const std::string& text, const std::wstring& title = L"") {
         HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, text.length() + 1);
         if (!hMem) {
-            tdmp::util::displayLastError(L"copyToClipboard failed, could not allocate memory");
+            mp::util::displayLastError(L"copyToClipboard failed, could not allocate memory");
             return;
         }
 
         LPVOID locked = GlobalLock(hMem);
         if (!locked) {
-            tdmp::util::displayLastError(L"Could not lock memory in copyToClipboard");
+            mp::util::displayLastError(L"Could not lock memory in copyToClipboard");
             GlobalFree(hMem);
             return;
         }
@@ -29,7 +29,9 @@ namespace tdmp::util {
 
         GlobalFree(hMem);
 
-        tdmp::util::displayMessage(MB_OK, L"Copied generated offsets to clipboard!");
+        if (!title.empty()) {
+            mp::util::displayMessage(MB_OK, title);
+        }
     }
 
 }

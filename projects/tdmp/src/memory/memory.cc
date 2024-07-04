@@ -2,7 +2,7 @@
 #include "memory/memory.h"
 #include "shared/util/util.h"
 
-using namespace tdmp;
+using namespace mp;
 
 uint64_t mem::baseAddress = 0;
 uint32_t mem::moduleSize = 0;
@@ -130,7 +130,7 @@ void mem::waitForSection(HMODULE hModule, const char* sectionName) {
     ExitProcess(1);
 }
 
-bool tdmp::mem::findGameFunctions(std::vector<game_function*>& functions) {
+bool mp::mem::findGameFunctionOffsets(std::vector<game_function>& functions) {
     MODULEINFO modInfo;
     HMODULE hModule = GetModuleHandle(NULL);
     if (!GetModuleInformation(GetCurrentProcess(), hModule, &modInfo, sizeof(MODULEINFO))) {
@@ -170,10 +170,10 @@ bool tdmp::mem::findGameFunctions(std::vector<game_function*>& functions) {
             continue;
 
         for (auto& func : functions) {
-            auto it = std::search(buffer.begin(), buffer.begin() + bytesRead, func->name.begin(), func->name.end());
+            auto it = std::search(buffer.begin(), buffer.begin() + bytesRead, func.name.begin(), func.name.end());
             if (it != buffer.begin() + bytesRead) {
                 uintptr_t stringAddress = addr + std::distance(buffer.begin(), it);
-                func->address = stringAddress; // Temporarily store the string address
+                func.address = stringAddress; // Temporarily store the string address
             }
         }
     }
@@ -189,15 +189,15 @@ bool tdmp::mem::findGameFunctions(std::vector<game_function*>& functions) {
             continue;
 
         for (auto& func : functions) {
-            if (func->address == 0)
+            if (func.address == 0)
                 continue;
 
             for (size_t i = 0; i < buffer.size(); ++i) {
-                if (buffer[i] == func->address) {
+                if (buffer[i] == func.address) {
                     uintptr_t potentialFuncAddr = addr + (i - 1) * sizeof(uintptr_t);
                     uintptr_t funcAddr;
                     if (ReadProcessMemory(GetCurrentProcess(), (LPCVOID)potentialFuncAddr, &funcAddr, sizeof(funcAddr), &bytesRead)) {
-                        func->address = funcAddr;
+                        func.address = funcAddr - (uintptr_t)baseAddress;
                     }
                 }
             }
@@ -205,4 +205,14 @@ bool tdmp::mem::findGameFunctions(std::vector<game_function*>& functions) {
     }
 
     return true;
+}
+
+bool mem::isAddressExecutable(uintptr_t address) {
+    MEMORY_BASIC_INFORMATION mbi;
+    if (VirtualQuery((void*)address, &mbi, sizeof(mbi))) {
+        return (mbi.Protect & PAGE_EXECUTE_READ) ||
+            (mbi.Protect & PAGE_EXECUTE_READWRITE) ||
+            (mbi.Protect & PAGE_EXECUTE_WRITECOPY);
+    }
+    return false;
 }

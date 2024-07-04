@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "memory/hooks.h"
 
-using namespace tdmp::mem;
+using namespace mp::mem;
 
 namespace {
     std::unordered_map<std::string, hooks::hook> hookMap;

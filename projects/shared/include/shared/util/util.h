@@ -6,7 +6,7 @@
 #define WIDEN2(x) L##x
 #define WIDEN(x) WIDEN2(x)
 
-namespace tdmp::util {
+namespace mp::util {
 
 static std::pair<int32_t, std::wstring> getLastError() {
     DWORD errorMessageID = ::GetLastError();

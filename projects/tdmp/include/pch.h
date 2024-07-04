@@ -1,6 +1,8 @@
 #ifndef TDMP_PCH_H
 #define TDMP_PCH_H
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <Windows.h>
@@ -16,6 +18,9 @@
 #include <string_view>
 #include <type_traits>
 #include <unordered_map>
+#include <set>
+#include <unordered_set>
+#include <cassert>
 
 #if defined(TDMP_DEBUG)
     #define _CRTDBG_MAP_ALLOC

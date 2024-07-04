@@ -12,7 +12,7 @@ project "tdmp"
 
     links { "kernel32", "user32", "lua51-static", "minhook.x64" }
 
-    staticruntime "on"
+    staticruntime "off"
 
     filter { "configurations:Debug" }
         runtime "Debug"

@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "shared/util/util.h"
 
-namespace tdmp::console {
+namespace mp::console {
 
     inline std::string defaultConsoleTitle;
 

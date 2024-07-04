@@ -7,6 +7,10 @@
       "Command": "Launcher",
       "Items": [
         {
+          "Id": "8ffe4233-5001-493f-824f-ce23372cdf8e",
+          "Command": "-generate-structs"
+        },
+        {
           "Id": "2f5c87ee-418f-44c6-aee2-94d66d31dfc9",
           "Command": "-dump"
         }

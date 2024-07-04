@@ -1,11 +1,12 @@
 # Visual Studio
-.vs
+*vs/
 *.sln
 *.vcxproj*
-
-# Snyk
-.dccache
+*.tlog
+*.obj
+*.log
+*.pdb
+*.ilk
 
 # Other
-build/
-.ark
+.git/

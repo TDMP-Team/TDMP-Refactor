@@ -2,7 +2,7 @@
 #include "shared/util/util.h"
 #include "steam.h"
 
-using namespace tdmp;
+using namespace mp;
 
 static constexpr wchar_t DLL_NAME[] = L"tdmp.dll";
 static PROCESS_INFORMATION pi{};

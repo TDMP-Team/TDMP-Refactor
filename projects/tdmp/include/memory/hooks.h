@@ -3,7 +3,7 @@
 
 #include "pch.h"
 
-namespace tdmp::mem::hooks {
+namespace mp::mem::hooks {
 
     // Structures
     //------------------------------------------------------------------------

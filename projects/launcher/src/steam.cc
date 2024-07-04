@@ -2,7 +2,7 @@
 #include "steam.h"
 #include "shared/util/util.h"
 
-using namespace tdmp;
+using namespace mp;
 
 bool steam::getPath(std::wstring& outPath) {
     wchar_t path[MAX_PATH];
@@ -27,7 +27,7 @@ bool steam::getPath(std::wstring& outPath) {
 bool steam::getGamePath(fs::path& outPath, std::wstring_view folderName, std::wstring_view executableName) {
     // Get steam path
     std::wstring steamPath;
-    if (!tdmp::steam::getPath(steamPath)) {
+    if (!mp::steam::getPath(steamPath)) {
         if (GetLastError() != 0) {
             util::displayLastError(L"Failed getting steam path");
         } else {
