@@ -196,6 +196,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     }
 
     VirtualFreeEx(pi.hProcess, thread, 0, MEM_RELEASE);
+
+    // Temporary fix for raddbg
+#if TDMP_DEBUG
+    Sleep(100);
+#endif
+
     ResumeThread(pi.hThread);
 
     SetConsoleCtrlHandler(consoleHandler, TRUE); // ! Does not work with AttachConsole (CTRL+C event)
