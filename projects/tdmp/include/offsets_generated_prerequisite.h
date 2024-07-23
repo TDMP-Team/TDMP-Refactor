@@ -2,6 +2,7 @@
 #define TDMP_GENERATED_OFFSETS_PREREQUISITE_H
 
 #include "pch.h"
+#include "console.h"
 #include "memory/memory.h"
 #include "teardown/types.h"
 

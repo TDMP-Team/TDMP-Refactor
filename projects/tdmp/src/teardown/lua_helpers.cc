@@ -5,19 +5,21 @@
 using namespace mp;
 using namespace teardown;
 
+using tLuaFunction = std::add_pointer_t<int(td::script_core_t* pSC, lua_State* L, const char* name)>;
+
 // Internal Functions
 //------------------------------------------------------------------------
 int invokeLuaFunction(lua_State* L) {
-    types::tLuaFunction func = reinterpret_cast<types::tLuaFunction>(lua_topointer(L, lua_upvalueindex(1)));
+    tLuaFunction func = reinterpret_cast<tLuaFunction>(lua_topointer(L, lua_upvalueindex(1)));
     const void* scriptCore = lua_topointer(L, lua_upvalueindex(2));
     const char* funcName = reinterpret_cast<const char*>(lua_topointer(L, lua_upvalueindex(3)));
 
-    return func((types::script_core_t*)scriptCore, L, funcName);
+    return func((td::script_core_t*)scriptCore, L, funcName);
 }
 
 // Public Functions
 //------------------------------------------------------------------------
-void lua_helpers::registerLuaFunction(types::script_core_t* scriptCore, types::td_string name, void* func) {
+void lua_helpers::registerLuaFunction(td::script_core_t* scriptCore, td::td_string name, void* func) {
     lua_State* L = scriptCore->innerCore.state_info->state;
 
     lua_pushlightuserdata(L, func);

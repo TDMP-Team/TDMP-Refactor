@@ -4,104 +4,27 @@
 #include "teardown/types.h"
 #include "shared/util/util.h"
 #include "memory/hooks.h"
-#include "memory/dumper.h"
 #include "offsets_generated.h"
 
 using namespace mp;
 using namespace teardown;
 
-static teardown::types::game* game;
+types::script_t* mpScript = nullptr;
 
-// Hooked Functions
+// Forward Functions
 //------------------------------------------------------------------------
-lua_State* h_lua_newstate(lua_Alloc f, void* ud) {
-    lua_State* L = funcs::lua::lua_newstate(f, ud);
-    //console::writeln("Lua State: 0x{:X}", (uintptr_t)L);
-
-    return L;
-}
-
-teardown::types::game* h_teardown_initialize(teardown::types::game* magicShit, DWORD** a2, int64_t a3) {
-    game = funcs::teardown::initialize(magicShit, a2, a3);
-
-    console::writeln("Teardown Initialize?");
-
-    teardown::types::td_string str("options.audio.menumusic");
-    //funcs::small_string::fromCString(&ss, "options.audio.menumusic");
-
-    int num = funcs::registry::getInt(game->registry, &str);
-
-    return game;
-}
-
-void h_teardown_update(types::game* game, int64_t input) {
-    funcs::teardown::update(game, input);
-    //game->splashProgress = 1.0f;
-
-    types::player_t* ply = (types::player_t*)(game->player);
-    types::scene_t* scene = (types::scene_t*)(game->scene);
-    types::something* something = (types::something*)(game);
-
-    if (scene) {
-        scene->firesystem->fires.reset();
-        scene->projectiles.reset();
-    }
-
-    ply->health = 1;
-
-    if (GetAsyncKeyState(VK_F1) & 0x8000) {
-        //console::writeln("TEST: {}", *((float*)((char*)game->qwordB8 + 0x15c)));
-
-        console::writeln("Health: {}\nSpeed: {}", ply->health, ply->walkingSpeed);
-        console::writeln("Grabbed body & shape: {} {}",
-                         (ply->grabbedBody != nullptr ? ply->grabbedBody->handle : 0),
-                         (ply->grabbedShape != nullptr ? ply->grabbedShape->handle : 0)
-        );
-
-        console::writeln("Transform: ({} {} {}) ({} {} {} {})", ply->pos.x, ply->pos.y, ply->pos.z,
-                         0,
-                         0,
-                         0,
-                         0
-        );
-        console::writeln("Velocity: {} {} {}", ply->velocity.x, ply->velocity.y, ply->velocity.z);
-        console::writeln("Grounded: {}", ply->isGrounded != 0);
-
-        //if (scene != nullptr) {
-        //    console::writeln("Vehicle: {}", scene->activeVehicle != nullptr ? scene->activeVehicle->handle : 0);
-        //}
-        //ply->walkingSpeed = 15;
-    } else if (GetAsyncKeyState(VK_F2) & 0x8000) {
-        something->respawnFlag = true;
-        //ply->walkingSpeed = 7;
-    } else if (GetAsyncKeyState(VK_F3) & 0x8000) {
-        for (uint32_t i = 0; i < scene->bodies.size(); ++i) {
-            types::body* body = scene->bodies[i];
-            console::writeln("{}", body->handle);
-        }
-    }
-}
-
-typedef int (*tLuaFunction)(const types::script_core_t* pSC, lua_State* L, const char* cFunctionName);
-
-void h_script_core_registerLuaFunctions(mp::teardown::types::script_core_t* scriptCore) {
-    console::writeln("Registering functions for {}", scriptCore->path.c_str());
-
-    lua_helpers::registerLuaFunction(scriptCore, types::td_string("MP_GetVersion"), [](types::script_core_t* scriptCore, lua_State* L) -> int {
-        lua_pushstring(L, "not-set");
-        return 1;
-    });
-
-    funcs::script_core::registerLuaFunctions(scriptCore);
-}
+lua_State* h_lua_newstate(lua_Alloc f, void* ud);
+void h_script_core_registerLuaFunctions(td::script_core_t* scriptCore);
+types::game_t* h_teardown_initialize(types::game_t* magicShit, DWORD** a2, int64_t a3);
+void h_teardown_update(types::game_t* game, int64_t input);
 
 // Public Functions
 //------------------------------------------------------------------------
 void teardown::initialize() {
     console::setStatus("Setting up hooks");
 
-    mem::hooks::addHook("game::ctor", mp::offsets::teardown::initialize, &h_teardown_initialize, &funcs::teardown::initialize);
-    mem::hooks::addHook("game::update", mp::offsets::teardown::update, &h_teardown_update, &funcs::teardown::update);
+    mem::hooks::addHook("teardown::ctor", mp::offsets::teardown::initialize, &h_teardown_initialize, &funcs::teardown::initialize);
+    mem::hooks::addHook("teardown::update", mp::offsets::teardown::update, &h_teardown_update, &funcs::teardown::update);
     mem::hooks::addHook("luaL_newstate", mp::offsets::lua::lua_newstate, &h_lua_newstate, &funcs::lua::lua_newstate);
     mem::hooks::addHook("script_core::registerLuaFunctions", mp::offsets::script_core::registerLuaFunctions, &h_script_core_registerLuaFunctions, &funcs::script_core::registerLuaFunctions);
 
@@ -112,79 +35,83 @@ void teardown::initialize() {
     funcs::game::log(types::log_level::error, "Error");
 }
 
-void teardown::earlyEntryThread() {
-    // Parse Arguments
-    //------------------------------------------------------------------------
-    argparse::ArgumentParser args("TDMP");
-    args.add_argument("-dump").default_value(false).implicit_value(true);
-    args.add_argument("-generate-structs").default_value(false).implicit_value(true);
+// Hooked Functions
+//------------------------------------------------------------------------
+lua_State* h_lua_newstate(lua_Alloc f, void* ud) {
+    lua_State* L = funcs::lua::lua_newstate(f, ud);
+    //console::writeln("Lua State: 0x{:X}", (uintptr_t)L);
 
-    {
-        int argc;
-        char** argv = util::commandLineToArgvA(GetCommandLineA(), &argc);
+    return L;
+}
 
-        try {
-            args.parse_known_args(argc, argv);
-        } catch (const std::exception& e) {
-            std::wstring err = util::s2ws(e.what());
-            util::displayError(L"Failed parsing arguments: {}", err);
-            return;
-        }
-    }
+void h_script_core_registerLuaFunctions(td::script_core_t* scriptCore) {
+    console::writeln("Registering functions for {}", scriptCore->path.c_str());
 
-    if (!mem::initializeMemory()) {
-        util::displayLastError(L"Failed to initialize memory");
-        ExitProcess(1);
-        return;
-    }
+    lua_helpers::registerLuaFunction(scriptCore, td::td_string("MP_GetVersion"), [](td::script_core_t* scriptCore, lua_State* L) -> int {
+        lua_pushstring(L, "not-set");
+        return 1;
+    });
 
-    {
-        bool wasDumped = false;
+    funcs::script_core::registerLuaFunctions(scriptCore);
+}
 
-        if (args.get<bool>("-dump")) {
-            dumper::dump(false);
-            wasDumped = true;
-        }
+teardown::types::game_t* h_teardown_initialize(teardown::types::game_t* magicShit, DWORD** a2, int64_t a3) {
+    teardown::game = funcs::teardown::initialize(magicShit, a2, a3);
+    console::writeln("game initialized");
 
-        if (args.get<bool>("-generate-structs")) {
-            dumper::dump(true);
-            wasDumped = true;
-        }
+    return teardown::game;
+}
 
-        if (wasDumped) {
-            ExitProcess(0);
-        }
-    }
+void h_teardown_update(types::game_t* game, int64_t input) {
+    static types::game_state state = types::game_state::none;
 
-    console::setStatus("Generating addresses");
+    funcs::teardown::update(teardown::game, input);
 
-    std::vector<std::string> badOffsets;
-    if (!offsets::generate(badOffsets)) {
-        std::stringstream ss;
-        ss << "Invalid offsets: " << badOffsets.size() << "\n";
+    types::player_t* player = (types::player_t*)(teardown::game->player);
+    types::scene_t*  scene = (types::scene_t*)(teardown::game->scene);
 
-        for (const std::string& offset : badOffsets) {
-            ss << "  " << offset << '\n';
+    if (state != game->state) {
+        state = game->state;
+
+        td::td_string stateSwitch = "Switched state to: ";
+        switch (state) {
+            case types::game_state::splash:       stateSwitch += "splash"; break;
+            case types::game_state::menu:         stateSwitch += "menu"; break;
+            case types::game_state::ui:           stateSwitch += "ui"; break;
+            case types::game_state::loading:      stateSwitch += "loading"; break;
+            case types::game_state::menu_loading: stateSwitch += "menu_loading"; break;
+            case types::game_state::play:         stateSwitch += "play"; break;
+            case types::game_state::edit:         stateSwitch += "edit"; break;
+            case types::game_state::quit:         stateSwitch += "quit"; break;
         }
 
-        std::wstring ssStr = util::s2ws(ss.str());
-
-        console::writeln(L"\n{}", ssStr);
-        util::displayError(ssStr);
-
-        ExitProcess(1);
+        console::writeln(stateSwitch);
     }
 
-    // Assign all the functions to their addresses
-    funcs::assign();
-    lua_funcs::assign();
-
-    if (MH_STATUS status = MH_Initialize(); status != MH_OK) {
-        std::wstring err = util::s2ws(MH_StatusToString(status));
-        util::displayError(L"Failed initializing minhook: {}", err);
-        return;
+    if (scene) {
+        scene->firesystem->fires.reset();
+        scene->projectiles.reset();
     }
 
-    teardown::initialize();
-    console::setStatus("");
+    player->health = 1;
+
+    if (GetAsyncKeyState(VK_F1) & 0x8000) {
+        //console::writeln("TEST: {}", *((float*)((char*)game->qwordB8 + 0x15c)));
+
+        console::writeln("Health: {}\nSpeed: {}", player->health, player->walkingSpeed);
+        console::writeln("Grabbed body & shape: {} {}",
+                         (player->grabbedBody != nullptr ? player->grabbedBody->handle : 0),
+                         (player->grabbedShape != nullptr ? player->grabbedShape->handle : 0)
+        );
+
+        console::writeln("Transform: ({} {} {}) ({} {} {} {})", player->pos.x, player->pos.y, player->pos.z,
+                         player->rot.x,
+                         player->rot.y,
+                         player->rot.z,
+                         player->rot.w
+        );
+
+        console::writeln("Velocity: {} {} {}", player->velocity.x, player->velocity.y, player->velocity.z);
+        console::writeln("Grounded: {}", player->isGrounded != 0);
+    }
 }

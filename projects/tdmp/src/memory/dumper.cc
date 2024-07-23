@@ -16,7 +16,7 @@ constexpr const char* headerTemplate = R"(#ifndef TDMP_GENERATED_OFFSETS_H
 
 #include "offsets_generated_prerequisite.h"
 
-namespace tdmp {{
+namespace mp {{
     namespace offsets {{
 {2}        inline bool generate(std::vector<std::string>& failedOffsets) {{
             console::writeln("Function Addresses:");
@@ -89,7 +89,7 @@ static void processSignature(const std::string& nsName, const dumper::dumper_sig
         dumper::function_type func = sig.function.value();
         types << std::format("                using t{0} = std::add_pointer_t<{1}({2})>;\n",
                              sig.name, func.returnType, func.arguments);
-        functions << std::format("            static types::{0}::t{1} {1} = nullptr;\n", nsName, sig.name);
+        functions << std::format("            inline types::{0}::t{1} {1} = nullptr;\n", nsName, sig.name);
     }
 }
 

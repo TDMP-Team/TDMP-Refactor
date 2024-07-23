@@ -21,6 +21,8 @@
 #include <set>
 #include <unordered_set>
 #include <cassert>
+#include <optional>
+#include <functional>
 
 #if defined(TDMP_DEBUG)
     #define _CRTDBG_MAP_ALLOC
@@ -47,6 +49,7 @@ extern "C" {
 #include "argparse/argparse.hpp"
 #include "MinHook.h"
 
+#include "teardown/containers/td_containers.h"
 #include "console.h"
 
 #endif // TDMP_PCH_H

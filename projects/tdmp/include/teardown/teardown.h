@@ -3,12 +3,12 @@
 
 #include "pch.h"
 #include "memory/memory.h"
+#include "teardown/types.h"
 
 namespace mp::teardown {
-
     void initialize();
-    void earlyEntryThread();
 
+    static types::game_t* game = nullptr;
 }
 
 #endif // TDMP_TEARDOWN_H

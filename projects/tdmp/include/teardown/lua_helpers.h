@@ -6,7 +6,7 @@
 
 namespace mp::lua_helpers {
 
-    void registerLuaFunction(mp::teardown::types::script_core_t* scriptCore, mp::teardown::types::td_string name, void* func);
+    void registerLuaFunction(td::script_core_t* scriptCore, td::td_string name, void* func);
 
 }
 
