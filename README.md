@@ -9,7 +9,6 @@ So nothing will be final is essentially what I'm saying (like h_lua_newstate bei
 ## Requirements
 - [Premake](https://premake.github.io/)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/)
-- [Steamworks SDK (Version 155)](https://partner.steamgames.com/doc/sdk)
 - [VCPKG](https://vcpkg.io/en/)
   - Once installed, set an environment variable called `VCPKG_ROOT` and set it to the root directory of vcpkg
   -----------------------------------------------------------------
@@ -21,6 +20,10 @@ So nothing will be final is essentially what I'm saying (like h_lua_newstate bei
 
 - [Steamless](https://github.com/atom0s/Steamless/releases) (Required for running debug builds, it allows Teardown to be debugged)
   - This will create a `teardown.exe.unpacked.exe` and the launcher will use this instead of the original
+
+## Dependencies
+- [Steamworks SDK (Version 155)](https://partner.steamgames.com/doc/sdk)
+- [ImGui Docking](https://github.com/ocornut/imgui/tree/docking)
 
 ## How to build
 ```

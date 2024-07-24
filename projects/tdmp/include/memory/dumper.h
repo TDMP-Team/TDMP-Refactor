@@ -42,8 +42,8 @@ namespace mp::dumper {
     };
 
     static constexpr dumper_signature tdSignatures[] = {
-        { "initialize", "4C 89 44 24 18 48 89 4C 24 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D 6C", function_type("mp::teardown::types::game*", "mp::teardown::types::game* game, DWORD** a2, int64_t a3") },
-        { "update", "48 8B C4 48 89 58 18 48 89 50 10 55 56 57 41 54 41 55 41 56 41 57 48 8D 6C", function_type("mp::teardown::types::game*", "mp::teardown::types::game* game, int64_t input") }
+        { "initialize", "4C 89 44 24 18 48 89 4C 24 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D 6C", function_type("mp::teardown::types::game_t*", "mp::teardown::types::game_t* game, DWORD** a2, int64_t a3") },
+        { "update", "48 8B C4 48 89 58 18 48 89 50 10 55 56 57 41 54 41 55 41 56 41 57 48 8D 6C", function_type("mp::teardown::types::game_t*", "mp::teardown::types::game_t* game, int64_t input") }
     };
 
     static constexpr dumper_signature registrySignatures[] = {
@@ -65,6 +65,12 @@ namespace mp::dumper {
         { "ctor", "48 89 4C 24 08 53 48 83 EC 20 48 8B D9 4C", function_type("mp::teardown::types::script_t*", "mp::teardown::types::script_t* script, bool entityThing") }
     };
 
+    // Render Signatures
+    //------------------------------------------------------------------------
+    static constexpr dumper_signature renderSignatures[] = {
+        { "createDXGIFactory1", "E8 ? ? ? ? 85 C0 78 69", function_type("HRESULT __stdcall", "const IID *const riid, void **ppFactory") }
+    };
+
     // All Signatures
     //------------------------------------------------------------------------
     #define ADD_NAMESAPCE(name, arr) {##name, {arr, sizeof(arr) / sizeof(arr[0])}}
@@ -75,7 +81,8 @@ namespace mp::dumper {
         ADD_NAMESAPCE("script", scriptSignatures),
         ADD_NAMESAPCE("game", gameSignatures),
         ADD_NAMESAPCE("teardown", tdSignatures),
-        ADD_NAMESAPCE("registry", registrySignatures)
+        ADD_NAMESAPCE("registry", registrySignatures),
+        ADD_NAMESAPCE("renderer", renderSignatures),
     };
 
     bool dump(bool genStructs);

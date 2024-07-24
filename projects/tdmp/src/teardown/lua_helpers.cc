@@ -27,5 +27,5 @@ void lua_helpers::registerLuaFunction(td::script_core_t* scriptCore, td::td_stri
     lua_pushlightuserdata(L, (void*)name.c_str());
     lua_pushcclosure(L, invokeLuaFunction, 3);
 
-     lua_setfield(L, LUA_GLOBALSINDEX, name.c_str());
+    lua_setfield(L, LUA_GLOBALSINDEX, name.c_str());
 }

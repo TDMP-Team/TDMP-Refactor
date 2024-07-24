@@ -8,5 +8,9 @@
 
 # Other
 build/
-projects/tdmp/deps/steamworks_sdk
+projects/tdmp/deps/steamworks_sdk/*
+!projects/tdmp/deps/steamworks_sdk/.gitkeep
+
+projects/tdmp/deps/imgui/*
+!projects/tdmp/deps/imgui/.gitkeep
 .ark

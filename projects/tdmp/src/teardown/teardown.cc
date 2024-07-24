@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "teardown/teardown.h"
 #include "teardown/lua_helpers.h"
+#include "teardown/td_hook_present.h"
 #include "teardown/types.h"
 #include "shared/util/util.h"
 #include "memory/hooks.h"
@@ -28,6 +29,8 @@ void teardown::initialize() {
     mem::hooks::addHook("luaL_newstate", mp::offsets::lua::lua_newstate, &h_lua_newstate, &funcs::lua::lua_newstate);
     mem::hooks::addHook("script_core::registerLuaFunctions", mp::offsets::script_core::registerLuaFunctions, &h_script_core_registerLuaFunctions, &funcs::script_core::registerLuaFunctions);
 
+    td::renderer::hookPresent(td::renderer::type::d3d12);
+
     // TODO: Figure out how to set a custom tag for the logging function
     funcs::game::log(types::log_level::debug, "Debug");
     funcs::game::log(types::log_level::info, "Info");
@@ -46,6 +49,14 @@ lua_State* h_lua_newstate(lua_Alloc f, void* ud) {
 
 void h_script_core_registerLuaFunctions(td::script_core_t* scriptCore) {
     console::writeln("Registering functions for {}", scriptCore->path.c_str());
+    lua_State* L = scriptCore->innerCore.state_info->state;
+
+#if TDMP_DEBUG
+    lua_pushboolean(L, true);
+#else
+    lua_pushboolean(L, false);
+#endif
+    lua_setglobal(L, "TDMP_DEBUG");
 
     lua_helpers::registerLuaFunction(scriptCore, td::td_string("MP_GetVersion"), [](td::script_core_t* scriptCore, lua_State* L) -> int {
         lua_pushstring(L, "not-set");
@@ -57,27 +68,34 @@ void h_script_core_registerLuaFunctions(td::script_core_t* scriptCore) {
 
 teardown::types::game_t* h_teardown_initialize(teardown::types::game_t* magicShit, DWORD** a2, int64_t a3) {
     teardown::game = funcs::teardown::initialize(magicShit, a2, a3);
-    console::writeln("game initialized");
+    console::writeln("Game initialized");
 
-    if (SteamAPI_Init()) {
-        ISteamFriends* friends = SteamFriends();
-        int32_t friendCount = friends->GetFriendCount(k_EFriendFlagImmediate);
-
-        for (int32_t i = 0; i < friendCount; ++i) {
-            CSteamID id = friends->GetFriendByIndex(i, k_EFriendFlagImmediate);
-            std::string_view name = friends->GetFriendPersonaName(id);
-
-            console::writeln("Friend {} is {}", i, name);
-        }
-    } else {
-        console::writeln("Failed to initialize Steam!");
-    }
+//     if (SteamAPI_Init()) {
+//         ISteamFriends* friends = SteamFriends();
+//         int32_t friendCount = friends->GetFriendCount(k_EFriendFlagImmediate);
+// 
+//         for (int32_t i = 0; i < friendCount; ++i) {
+//             CSteamID id = friends->GetFriendByIndex(i, k_EFriendFlagImmediate);
+//             std::string_view name = friends->GetFriendPersonaName(id);
+// 
+//             console::writeln("Friend {} is {}", i, name);
+//         }
+//     } else {
+//         console::writeln("Failed to initialize Steam!");
+//     }
 
     return teardown::game;
 }
 
 void h_teardown_update(types::game_t* game, int64_t input) {
     static types::game_state state = types::game_state::none;
+
+    // Something is bad with the renderer when I do this. I previously had ImGui implemented, but I got the same crash at the same place as this gets me when uncommented
+    // Calling teardown::update crashes soon after
+    // TODO: Get the crash address and figure out where the ImGui stuff is (to tell it to also render that or whatever)
+
+    // char* targetAddress = reinterpret_cast<char*>(reinterpret_cast<uintptr_t>(game) + 0x7B0 + 1);
+    // *targetAddress = 0;
 
     funcs::teardown::update(teardown::game, input);
 

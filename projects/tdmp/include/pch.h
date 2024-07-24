@@ -24,6 +24,17 @@
 #include <optional>
 #include <functional>
 
+#include <dxgi.h>
+#include <d3d11.h>
+#include <d3d12.h>
+#include <dxgi1_4.h>
+#include <wrl/client.h>
+
+#include "imgui.h"
+#include "imgui_impl_dx12.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_win32.h"
+
 #if defined(TDMP_DEBUG)
     #define _CRTDBG_MAP_ALLOC
     #include <stdlib.h>
