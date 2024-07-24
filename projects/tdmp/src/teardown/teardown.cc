@@ -24,12 +24,12 @@ void h_teardown_update(types::game_t* game, int64_t input);
 void teardown::initialize() {
     console::setStatus("Setting up hooks");
 
+    td::renderer::hookPresent(td::renderer::type::opengl);
+
     mem::hooks::addHook("teardown::ctor", mp::offsets::teardown::initialize, &h_teardown_initialize, &funcs::teardown::initialize);
     mem::hooks::addHook("teardown::update", mp::offsets::teardown::update, &h_teardown_update, &funcs::teardown::update);
     mem::hooks::addHook("luaL_newstate", mp::offsets::lua::lua_newstate, &h_lua_newstate, &funcs::lua::lua_newstate);
     mem::hooks::addHook("script_core::registerLuaFunctions", mp::offsets::script_core::registerLuaFunctions, &h_script_core_registerLuaFunctions, &funcs::script_core::registerLuaFunctions);
-
-    td::renderer::hookPresent(td::renderer::type::d3d12);
 
     // TODO: Figure out how to set a custom tag for the logging function
     funcs::game::log(types::log_level::debug, "Debug");
@@ -66,8 +66,8 @@ void h_script_core_registerLuaFunctions(td::script_core_t* scriptCore) {
     funcs::script_core::registerLuaFunctions(scriptCore);
 }
 
-teardown::types::game_t* h_teardown_initialize(teardown::types::game_t* magicShit, DWORD** a2, int64_t a3) {
-    teardown::game = funcs::teardown::initialize(magicShit, a2, a3);
+teardown::types::game_t* h_teardown_initialize(teardown::types::game_t* game, DWORD** a2, int64_t a3) {
+    teardown::game = funcs::teardown::initialize(game, a2, a3);
     console::writeln("Game initialized");
 
 //     if (SteamAPI_Init()) {
@@ -117,7 +117,7 @@ void h_teardown_update(types::game_t* game, int64_t input) {
             case types::game_state::quit:         stateSwitch += "quit"; break;
         }
 
-        console::writeln(stateSwitch);
+        console::writeln_td(stateSwitch);
     }
 
     if (scene) {

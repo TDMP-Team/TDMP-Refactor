@@ -68,7 +68,8 @@ namespace mp::dumper {
     // Render Signatures
     //------------------------------------------------------------------------
     static constexpr dumper_signature renderSignatures[] = {
-        { "createDXGIFactory1", "E8 ? ? ? ? 85 C0 78 69", function_type("HRESULT __stdcall", "const IID *const riid, void **ppFactory") }
+        { "createDXGIFactory1", "E8 ? ? ? ? 85 C0 78 69", function_type("HRESULT __stdcall", "const IID *const riid, void **ppFactory") },
+        { "initializeForAPI", "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 40 48 8B FA 48 8B F1 48 63", function_type("_DWORD* __fastcall", "_DWORD* a1, int *a2") }
     };
 
     // All Signatures

@@ -18,6 +18,7 @@ namespace mp::mem::hooks {
     // Functions
     //------------------------------------------------------------------------
     bool addHook(const std::string& name, void* target, void* detour, void** orig, bool enabled = true);
+    bool removeHook(const std::string& name);
 
     template<typename T, typename D, typename O>
     inline bool addHook(const std::string& name, T target, D detour, O* orig, bool enabled = true) {

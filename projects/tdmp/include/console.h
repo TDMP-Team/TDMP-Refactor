@@ -63,7 +63,7 @@ namespace mp::console {
         console::write(concatenatedString, std::forward<Args>(args)...);
     }
 
-    inline void writeln(const td::td_string& tdStr) {
+    inline void writeln_td(const td::td_string& tdStr) {
         WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), tdStr.c_str(), static_cast<DWORD>(tdStr.length()), nullptr, nullptr);
         WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), "\n", 1, nullptr, nullptr);
         OutputDebugStringA(tdStr.c_str());
