@@ -59,6 +59,20 @@ teardown::types::game_t* h_teardown_initialize(teardown::types::game_t* magicShi
     teardown::game = funcs::teardown::initialize(magicShit, a2, a3);
     console::writeln("game initialized");
 
+    if (SteamAPI_Init()) {
+        ISteamFriends* friends = SteamFriends();
+        int32_t friendCount = friends->GetFriendCount(k_EFriendFlagImmediate);
+
+        for (int32_t i = 0; i < friendCount; ++i) {
+            CSteamID id = friends->GetFriendByIndex(i, k_EFriendFlagImmediate);
+            std::string_view name = friends->GetFriendPersonaName(id);
+
+            console::writeln("Friend {} is {}", i, name);
+        }
+    } else {
+        console::writeln("Failed to initialize Steam!");
+    }
+
     return teardown::game;
 }
 

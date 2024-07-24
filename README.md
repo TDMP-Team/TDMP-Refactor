@@ -9,6 +9,7 @@ So nothing will be final is essentially what I'm saying (like h_lua_newstate bei
 ## Requirements
 - [Premake](https://premake.github.io/)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/)
+- [Steamworks SDK (Version 155)](https://partner.steamgames.com/doc/sdk)
 - [VCPKG](https://vcpkg.io/en/)
   - Once installed, set an environment variable called `VCPKG_ROOT` and set it to the root directory of vcpkg
   -----------------------------------------------------------------

@@ -4,13 +4,13 @@ project "tdmp"
     cppdialect "C++20"
 
     files { "src/**.cc", "include/**.h", "../shared/include/**.h" }
-    includedirs { "include", "../shared/include", VCPKG_INCLUDE, "deps/lua/include" }
-    libdirs { VCPKG_LIB, "deps/lua/lib" }
+    includedirs { "include", "../shared/include", VCPKG_INCLUDE, "deps/lua/include", "deps/steamworks_sdk/public" }
+    libdirs { VCPKG_LIB, "deps/lua/lib", "deps/steamworks_sdk/redistributable_bin/win64" }
 
     pchheader "pch.h" -- When setting the precompiled header file, you don't provide the path to the file as you might expect. Rather, you specify how the include will appear in the source code
     pchsource "src/pch.cc"
 
-    links { "kernel32", "user32", "lua51-static", "minhook.x64" }
+    links { "kernel32", "user32", "lua51-static", "minhook.x64", "steam_api64" }
 
     staticruntime "off"
 

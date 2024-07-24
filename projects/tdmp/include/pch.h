@@ -52,4 +52,6 @@ extern "C" {
 #include "teardown/containers/td_containers.h"
 #include "console.h"
 
+#include "steam/steam_api.h"
+
 #endif // TDMP_PCH_H
